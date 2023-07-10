@@ -8,4 +8,5 @@ object Constants {
     const val ACTION_CLEAR = 3
     const val ACTION_NEXT = 4
     const val ACTION_PREV = 5
+
 }

@@ -1,18 +1,18 @@
 package com.example.basicmusicapp.fragments
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.media.MediaPlayer
+import android.os.Binder
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.basicmusicapp.Constants
@@ -22,20 +22,54 @@ import com.example.basicmusicapp.broadcastreceiver.MyReceiver
 import com.example.basicmusicapp.databinding.FragmentPlaySongBinding
 import com.example.basicmusicapp.models.Song
 import com.example.basicmusicapp.repository.DataSongs
+import com.example.basicmusicapp.service.MusicService
 import com.example.basicmusicapp.service.MyService
 import java.text.SimpleDateFormat
 
 
 class PlaySongFragment : Fragment() {
     private lateinit var binding: FragmentPlaySongBinding
-    private var mediaPlayer: MediaPlayer? = null
     var index: Int = 0
     var song: Song? = null
+    var isBound: Boolean = false
+    private var musicService: MusicService? = null
     private val actionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.getIntExtra("action_music", 0) as Int
             handleActionMusic(action)
         }
+    }
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as (MusicService.MyBinder)
+            musicService = binder.getService()
+            isBound = true
+            Log.d("service connected", isBound.toString())
+            if (song != null) {
+                musicService!!.setSong(song!!)
+                setTimeTotal()
+                updateTimeSong()
+            } else {
+                Toast.makeText(context, "Khong cos bai hat nao ", Toast.LENGTH_LONG).show()
+            }
+            binding.apply {
+                btnPausePlay.setOnClickListener {
+                    pausePlaySong()
+                }
+                btnNext.setOnClickListener {
+                    nextSong()
+                }
+                btnPrevious.setOnClickListener {
+                    previousSong()
+                }
+            }
+
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            isBound = false
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,13 +78,18 @@ class PlaySongFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        connectToService()
         val filter = IntentFilter("action_music")
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(actionReceiver, filter)
     }
 
+    override fun onStop() {
+        super.onStop()
+        disconnectFromService()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        endService()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(actionReceiver)
     }
 
@@ -74,18 +113,9 @@ class PlaySongFragment : Fragment() {
                 val bundle = Bundle()
                 bundle.putSerializable("song", song)
                 fragment.arguments = bundle
-                fragmentTransaction.replace(R.id.frameLayout,fragment)
+                fragmentTransaction.replace(R.id.frameLayout, fragment)
                 fragmentTransaction.commit()
 //                fragmentManager.popBackStack()
-            }
-            btnNext.setOnClickListener {
-                nextSong()
-            }
-            btnPrevious.setOnClickListener {
-                previousSong()
-            }
-            btnPausePlay.setOnClickListener {
-                pausePlaySong()
             }
             seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(
@@ -101,13 +131,10 @@ class PlaySongFragment : Fragment() {
                 }
 
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                    mediaPlayer!!.seekTo(binding.seekBar.progress)
+                    musicService!!.seekTo(binding.seekBar.progress)
                 }
 
             })
-            btnEndService.setOnClickListener {
-                endService()
-            }
         }
 
         return view
@@ -120,9 +147,6 @@ class PlaySongFragment : Fragment() {
             index = bundle.getInt("index")
             binding.apply {
                 setUiSong()
-                playSong(song!!.fileSong)
-                setTimeTotal()
-                beginService()
             }
         }
     }
@@ -141,7 +165,7 @@ class PlaySongFragment : Fragment() {
     private fun previousSong() {
         if (index != null) {
             if (index == 0) {
-                index = DataSongs().listSongs.size
+                index = DataSongs().listSongs.size - 1
             } else {
                 index--
             }
@@ -150,12 +174,11 @@ class PlaySongFragment : Fragment() {
     }
 
     private fun setInitNextPrevSong() {
-        stopPlayer()
         song = DataSongs().listSongs[index]
-        playSong(song!!.fileSong)
+        musicService!!.setSong(song!!)
         setTimeTotal()
         setUiSong()
-        beginService()
+        updateTimeSong()
     }
 
     private fun setUiSong() {
@@ -167,16 +190,15 @@ class PlaySongFragment : Fragment() {
     }
 
     private fun pausePlaySong() {
-        if (mediaPlayer!!.isPlaying) {
+        if (musicService!!.isPlaying()) {
             binding.btnPausePlay.setImageResource(R.drawable.play_icon)
-            mediaPlayer!!.pause()
+            musicService!!.pause()
             startMyReceiver(Constants.ACTION_PAUSE)
         } else {
-            mediaPlayer!!.start()
+            musicService!!.play()
             binding.btnPausePlay.setImageResource(R.drawable.pause_icon)
             startMyReceiver(Constants.ACTION_RESUME)
         }
-
     }
 
     private fun startMyReceiver(action: Int) {
@@ -188,29 +210,18 @@ class PlaySongFragment : Fragment() {
         requireContext().sendBroadcast(intent)
     }
 
-    private fun playSong(audio: Int) {
-        mediaPlayer = MediaPlayer.create(context, audio)
-        mediaPlayer!!.start()
-        mediaPlayer!!.setOnCompletionListener {
-            stopPlayer()
-            nextSong()
-        }
-        updateTimeSong()
-    }
-
-    private fun stopPlayer() {
-        if (mediaPlayer != null) {
-            mediaPlayer!!.release()
-            mediaPlayer = null
-        }
-    }
-
     private fun setTimeTotal() {
         var simpleDateFormat = SimpleDateFormat("mm:ss")
-        binding.apply {
-            TvTimeTotals.text = simpleDateFormat.format(mediaPlayer!!.duration)
-            seekBar.max = mediaPlayer!!.duration
+        if (isBound) {
+            binding.apply {
+                TvTimeTotals.text = simpleDateFormat.format(musicService!!.duration())
+                seekBar.max = musicService!!.duration()
+            }
+        } else {
+            Toast.makeText(context, "No service", Toast.LENGTH_LONG).show()
+            Log.d("Service connect", "khong co service")
         }
+
     }
 
     private fun updateTimeSong() {
@@ -218,13 +229,13 @@ class PlaySongFragment : Fragment() {
         val updateRunnable = object : Runnable {
             override fun run() {
                 var simpleDateFormat = SimpleDateFormat("mm:ss")
-                if (mediaPlayer != null && mediaPlayer!!.isPlaying) {
+                if (musicService != null && musicService!!.isPlaying()) {
                     binding.apply {
-                        TvTimeSong.text = simpleDateFormat.format(mediaPlayer!!.currentPosition)
-                        seekBar.progress = mediaPlayer!!.currentPosition
+                        TvTimeSong.text = simpleDateFormat.format(musicService!!.currentPosition())
+                        seekBar.progress = musicService!!.currentPosition()
                     }
                 }
-                if (mediaPlayer == null) {
+                if (musicService == null) {
                     binding.apply {
                         TvTimeSong.text = "00:00"
                         TvTimeTotals.text = "00:00"
@@ -237,33 +248,33 @@ class PlaySongFragment : Fragment() {
         handler.postDelayed(updateRunnable, 100)
     }
 
-    private fun beginService() {
-        var intent = Intent(requireContext(), MyService::class.java)
-        var bundle = Bundle()
-        bundle.putSerializable("song_object", song!!)
-        intent.putExtras(bundle)
-        requireContext().startService(intent)
+    private fun connectToService() {
+        val intent = Intent(requireContext(), MusicService::class.java)
+        requireContext().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
-    private fun endService() {
-        val intent = Intent(requireContext(), MyService::class.java)
-        requireContext().stopService(intent)
-        stopPlayer()
-        startMyReceiver(ACTION_CLEAR)
+    private fun disconnectFromService() {
+        if (isBound) {
+            requireContext().unbindService(serviceConnection)
+            isBound = false
+        }
     }
+
 
     private fun handleActionMusic(action: Int) {
         when (action) {
             Constants.ACTION_PAUSE -> {
                 // Xử lý action PAUSE
                 Log.d("broadcast111", "pause")
-                mediaPlayer!!.pause()
+                musicService!!.isPlayingServiceMedia=false
+                musicService!!.pause()
                 binding.btnPausePlay.setImageResource(R.drawable.play_icon)
             }
             Constants.ACTION_RESUME -> {
                 // Xử lý action RESUME
                 Log.d("broadcast111", "play")
-                mediaPlayer!!.start()
+                musicService!!.isPlayingServiceMedia=true
+                musicService!!.play()
                 binding.btnPausePlay.setImageResource(R.drawable.pause_icon)
             }
             Constants.ACTION_CLEAR -> {
