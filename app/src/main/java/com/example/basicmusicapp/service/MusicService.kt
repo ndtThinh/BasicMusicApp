@@ -6,8 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
-import android.os.Binder
-import android.os.IBinder
+import android.os.*
 import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
@@ -22,9 +21,8 @@ class MusicService : Service() {
     private var mediaPlayer: MediaPlayer? = null
     private var currentSong: Song? = null
     var isPlayingServiceMedia = true
+
     override fun onBind(intent: Intent?): IBinder? {
-        var actionMusic = intent!!.getIntExtra("action_music_service", 0)
-        handleActionMusic(actionMusic)
         return binder
     }
 
@@ -81,6 +79,8 @@ class MusicService : Service() {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        var actionMusic = intent!!.getIntExtra("action_music_service", 0)
+        handleActionMusic(actionMusic)
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -99,7 +99,7 @@ class MusicService : Service() {
             R.id.btnClearNotification,
             getPendingIntent(this, Constants.ACTION_CLEAR)
         )
-        if (mediaPlayer!!.isPlaying) {
+        if (isPlayingServiceMedia) {
             remoteView.setOnClickPendingIntent(
                 R.id.btnPausePlayNotification, getPendingIntent(
                     this,
@@ -172,6 +172,7 @@ class MusicService : Service() {
             }
             Constants.ACTION_NEXT -> {
                 sendNotification(currentSong)
+                Log.d("MusicService", "nextsong")
             }
             Constants.ACTION_PREV -> {
                 sendNotification(currentSong)

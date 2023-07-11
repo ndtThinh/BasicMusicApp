@@ -59,7 +59,6 @@ class MyService : Service() {
         remoteView.setTextViewText(R.id.tvTitleSong, song!!.title)
         remoteView.setTextViewText(R.id.tvSingerName, song!!.singer)
         remoteView.setImageViewBitmap(R.id.imgSong, bitmap)
-        remoteView.setImageViewResource(R.id.btnPausePlayNotification, R.drawable.pause_icon)
         remoteView.setOnClickPendingIntent(
             R.id.btnClearNotification,
             getPendingIntent(this, ACTION_CLEAR)

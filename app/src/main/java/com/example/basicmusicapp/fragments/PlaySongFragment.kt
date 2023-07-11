@@ -208,6 +208,11 @@ class PlaySongFragment : Fragment() {
         )
         intent.putExtra("action_music", action)
         requireContext().sendBroadcast(intent)
+        if (musicService!!.isPlayingServiceMedia) {
+            binding.btnPausePlay.setImageResource(R.drawable.pause_icon)
+        } else {
+            binding.btnPausePlay.setImageResource(R.drawable.play_icon)
+        }
     }
 
     private fun setTimeTotal() {
@@ -266,14 +271,14 @@ class PlaySongFragment : Fragment() {
             Constants.ACTION_PAUSE -> {
                 // Xử lý action PAUSE
                 Log.d("broadcast111", "pause")
-                musicService!!.isPlayingServiceMedia=false
+                musicService!!.isPlayingServiceMedia = false
                 musicService!!.pause()
                 binding.btnPausePlay.setImageResource(R.drawable.play_icon)
             }
             Constants.ACTION_RESUME -> {
                 // Xử lý action RESUME
                 Log.d("broadcast111", "play")
-                musicService!!.isPlayingServiceMedia=true
+                musicService!!.isPlayingServiceMedia = true
                 musicService!!.play()
                 binding.btnPausePlay.setImageResource(R.drawable.pause_icon)
             }
@@ -282,6 +287,7 @@ class PlaySongFragment : Fragment() {
             }
             Constants.ACTION_NEXT -> {
                 nextSong()
+                Log.d("FragmentPlay", "Next SOng")
             }
             Constants.ACTION_PREV -> {
                 previousSong()
