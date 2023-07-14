@@ -56,38 +56,38 @@ class MyService : Service() {
             PendingIntent.getActivity(this, 0, intentBack, PendingIntent.FLAG_CANCEL_CURRENT)
 
         val remoteView = RemoteViews(packageName, R.layout.layout_custom_notification)
-        remoteView.setTextViewText(R.id.tvTitleSong, song!!.title)
-        remoteView.setTextViewText(R.id.tvSingerName, song!!.singer)
-        remoteView.setImageViewBitmap(R.id.imgSong, bitmap)
+        remoteView.setTextViewText(R.id.tvTitleSongPlaying, song!!.title)
+        remoteView.setTextViewText(R.id.tvSingerNamePlaying, song!!.singer)
+        remoteView.setImageViewBitmap(R.id.imgSongPlaying, bitmap)
         remoteView.setOnClickPendingIntent(
-            R.id.btnClearNotification,
+            R.id.btnClearNotificationPlaying,
             getPendingIntent(this, ACTION_CLEAR)
         )
         if (isPlaying) {
             remoteView.setOnClickPendingIntent(
-                R.id.btnPausePlayNotification, getPendingIntent(
+                R.id.btnPausePlayNotificationPlaying, getPendingIntent(
                     this,
                     ACTION_PAUSE
                 )
             )
-            remoteView.setImageViewResource(R.id.btnPausePlayNotification, R.drawable.pause_icon)
+            remoteView.setImageViewResource(R.id.btnPausePlayNotificationPlaying, R.drawable.pause_icon)
         } else {
             remoteView.setOnClickPendingIntent(
-                R.id.btnPausePlayNotification, getPendingIntent(
+                R.id.btnPausePlayNotificationPlaying, getPendingIntent(
                     this,
                     ACTION_RESUME
                 )
             )
-            remoteView.setImageViewResource(R.id.btnPausePlayNotification, R.drawable.play_icon)
+            remoteView.setImageViewResource(R.id.btnPausePlayNotificationPlaying, R.drawable.play_icon)
         }
         remoteView.setOnClickPendingIntent(
-            R.id.btnNextNotification, getPendingIntent(
+            R.id.btnNextNotificationPlaying, getPendingIntent(
                 this,
                 ACTION_NEXT
             )
         )
         remoteView.setOnClickPendingIntent(
-            R.id.btnPrevNotification,
+            R.id.btnPrevNotificationPlaying,
             getPendingIntent(this, ACTION_PREV)
         )
 

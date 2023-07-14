@@ -13,10 +13,12 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.basicmusicapp.Constants
 import com.example.basicmusicapp.Constants.ACTION_CLEAR
+import com.example.basicmusicapp.Constants.ACTION_PAUSE
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.broadcastreceiver.MyReceiver
 import com.example.basicmusicapp.databinding.FragmentPlaySongBinding
@@ -27,49 +29,22 @@ import com.example.basicmusicapp.service.MyService
 import java.text.SimpleDateFormat
 
 
-class PlaySongFragment : Fragment() {
+class PlaySongFragment : Fragment(), ServiceConnection {
     private lateinit var binding: FragmentPlaySongBinding
-    var index: Int = 0
     var song: Song? = null
-    var isBound: Boolean = false
-    private var musicService: MusicService? = null
+
+
+    companion object {
+        var isBound: Boolean = false
+        var musicService: MusicService? = null
+        var index: Int = 0
+    }
+
     private val actionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.getIntExtra("action_music", 0) as Int
             handleActionMusic(action)
         }
-    }
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as (MusicService.MyBinder)
-            musicService = binder.getService()
-            isBound = true
-            Log.d("service connected", isBound.toString())
-            if (song != null) {
-                musicService!!.setSong(song!!)
-                setTimeTotal()
-                updateTimeSong()
-            } else {
-                Toast.makeText(context, "Khong cos bai hat nao ", Toast.LENGTH_LONG).show()
-            }
-            binding.apply {
-                btnPausePlay.setOnClickListener {
-                    pausePlaySong()
-                }
-                btnNext.setOnClickListener {
-                    nextSong()
-                }
-                btnPrevious.setOnClickListener {
-                    previousSong()
-                }
-            }
-
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            isBound = false
-        }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,7 +60,7 @@ class PlaySongFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        disconnectFromService()
+        Log.d("PlaySong", "on stop")
     }
 
     override fun onDestroyView() {
@@ -95,6 +70,8 @@ class PlaySongFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+//        disconnectFromService()
+        Log.d("PlaySong", "on destroy")
     }
 
     override fun onCreateView(
@@ -108,14 +85,7 @@ class PlaySongFragment : Fragment() {
         binding.apply {
             backBtn.setOnClickListener {
                 val fragmentManager = parentFragmentManager
-                val fragment: ListSongFragment = ListSongFragment()
-                val fragmentTransaction = fragmentManager.beginTransaction()
-                val bundle = Bundle()
-                bundle.putSerializable("song", song)
-                fragment.arguments = bundle
-                fragmentTransaction.replace(R.id.frameLayout, fragment)
-                fragmentTransaction.commit()
-//                fragmentManager.popBackStack()
+                fragmentManager.popBackStack()
             }
             seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(
@@ -160,6 +130,7 @@ class PlaySongFragment : Fragment() {
             }
             setInitNextPrevSong()
         }
+
     }
 
     private fun previousSong() {
@@ -175,7 +146,7 @@ class PlaySongFragment : Fragment() {
 
     private fun setInitNextPrevSong() {
         song = DataSongs().listSongs[index]
-        musicService!!.setSong(song!!)
+//        song = musicService!!.currentSong
         setTimeTotal()
         setUiSong()
         updateTimeSong()
@@ -186,16 +157,15 @@ class PlaySongFragment : Fragment() {
             TvNameSong.text = song!!.title
             TvNameSinger.text = song!!.singer
             imageViewSong.setImageResource(song!!.image)
+            layoutFragmentPlaySong.setBackgroundResource(song!!.image)
         }
     }
 
     private fun pausePlaySong() {
         if (musicService!!.isPlaying()) {
             binding.btnPausePlay.setImageResource(R.drawable.play_icon)
-            musicService!!.pause()
             startMyReceiver(Constants.ACTION_PAUSE)
         } else {
-            musicService!!.play()
             binding.btnPausePlay.setImageResource(R.drawable.pause_icon)
             startMyReceiver(Constants.ACTION_RESUME)
         }
@@ -208,11 +178,6 @@ class PlaySongFragment : Fragment() {
         )
         intent.putExtra("action_music", action)
         requireContext().sendBroadcast(intent)
-        if (musicService!!.isPlayingServiceMedia) {
-            binding.btnPausePlay.setImageResource(R.drawable.pause_icon)
-        } else {
-            binding.btnPausePlay.setImageResource(R.drawable.play_icon)
-        }
     }
 
     private fun setTimeTotal() {
@@ -255,13 +220,16 @@ class PlaySongFragment : Fragment() {
 
     private fun connectToService() {
         val intent = Intent(requireContext(), MusicService::class.java)
-        requireContext().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        requireContext().bindService(intent, this, Context.BIND_AUTO_CREATE)
+//        requireContext().startService(intent)
     }
 
     private fun disconnectFromService() {
         if (isBound) {
-            requireContext().unbindService(serviceConnection)
+            requireContext().unbindService(this)
             isBound = false
+            musicService = null
+            Log.d("Action", "unbind service")
         }
     }
 
@@ -270,29 +238,71 @@ class PlaySongFragment : Fragment() {
         when (action) {
             Constants.ACTION_PAUSE -> {
                 // Xử lý action PAUSE
-                Log.d("broadcast111", "pause")
-                musicService!!.isPlayingServiceMedia = false
-                musicService!!.pause()
+                Log.d("Action Music", "pause")
+//                musicService!!.pause()
+                Log.d("Action Music", musicService!!.isPlaying().toString())
                 binding.btnPausePlay.setImageResource(R.drawable.play_icon)
             }
             Constants.ACTION_RESUME -> {
                 // Xử lý action RESUME
-                Log.d("broadcast111", "play")
-                musicService!!.isPlayingServiceMedia = true
-                musicService!!.play()
+                Log.d("Action Music", "play")
+//                musicService!!.play()
+                Log.d("Action Music", musicService!!.isPlaying().toString())
                 binding.btnPausePlay.setImageResource(R.drawable.pause_icon)
             }
             Constants.ACTION_CLEAR -> {
                 // Xử lý action CLEAR
+                binding.apply {
+                    TvTimeSong.text = "00:00"
+                    TvTimeTotals.text = "00:00"
+                    seekBar.progress = 0
+                }
+                disconnectFromService()
             }
             Constants.ACTION_NEXT -> {
+                //Xử lý action NEXT
                 nextSong()
+//                setInitNextPrevSong()
                 Log.d("FragmentPlay", "Next SOng")
             }
             Constants.ACTION_PREV -> {
+                //Xử lý action PREVIOUS
                 previousSong()
+//                setInitNextPrevSong()
+                Log.d("FragmentPlay", "Prev SOng")
             }
         }
+    }
+
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        val binder = service as (MusicService.MyBinder)
+        musicService = binder.getService()
+        isBound = true
+        Log.d("service connected", isBound.toString())
+        if (song != null) {
+            musicService!!.setSong(song!!, index)
+            setTimeTotal()
+            updateTimeSong()
+        } else {
+            Toast.makeText(context, "Khong cos bai hat nao ", Toast.LENGTH_LONG).show()
+        }
+        binding.apply {
+            btnPausePlay.setOnClickListener {
+                pausePlaySong()
+            }
+            btnNext.setOnClickListener {
+                startMyReceiver(Constants.ACTION_NEXT)
+                Log.d("Action Music", "next")
+            }
+            btnPrevious.setOnClickListener {
+                startMyReceiver(Constants.ACTION_PREV)
+            }
+        }
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        isBound = false
+        musicService = null
     }
 
 

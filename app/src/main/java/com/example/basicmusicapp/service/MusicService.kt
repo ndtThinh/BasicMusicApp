@@ -10,21 +10,24 @@ import android.os.*
 import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import androidx.fragment.app.Fragment
 import com.example.basicmusicapp.Constants
 import com.example.basicmusicapp.MainActivity
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.broadcastreceiver.MyReceiver
 import com.example.basicmusicapp.models.Song
+import com.example.basicmusicapp.repository.DataSongs
 
 class MusicService : Service() {
     private val binder = MyBinder()
     private var mediaPlayer: MediaPlayer? = null
-    private var currentSong: Song? = null
-    var isPlayingServiceMedia = true
+    var currentSong: Song? = null
+    private var mIndex: Int = 0
 
     override fun onBind(intent: Intent?): IBinder? {
         return binder
     }
+
 
     inner class MyBinder : Binder() {
         fun getService(): MusicService {
@@ -32,38 +35,50 @@ class MusicService : Service() {
         }
     }
 
-    fun setSong(song: Song) {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        var actionMusic = intent!!.getIntExtra("action_music_receiver", 0)
+        Log.d("Action Music", actionMusic.toString())
+        handleActionMusic(actionMusic)
+        return START_NOT_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (mediaPlayer != null) {
+            mediaPlayer!!.stop()
+            mediaPlayer!!.release()
+            mediaPlayer = null
+        }
+        Log.d("Action Music", "end service onDestroy")
+    }
+
+    fun setSong(song: Song, index: Int) {
         if (currentSong == null) {
             currentSong = song
+            mIndex = index
             mediaPlayer = MediaPlayer.create(baseContext, currentSong!!.fileSong)
             mediaPlayer!!.start()
-            isPlayingServiceMedia = true
             sendNotification(currentSong)
         } else {
             currentSong = song
+            mIndex = index
             mediaPlayer!!.stop()
             mediaPlayer!!.release()
             mediaPlayer = MediaPlayer.create(baseContext, currentSong!!.fileSong)
             mediaPlayer!!.start()
-            isPlayingServiceMedia = true
             sendNotification(currentSong)
         }
 
     }
 
     fun isPlaying(): Boolean {
-        return mediaPlayer!!.isPlaying
+        if (mediaPlayer != null) {
+            return mediaPlayer!!.isPlaying
+        }
+        return false
+//        return mediaPlayer!!.isPlaying
     }
 
-    fun play() {
-        mediaPlayer!!.start()
-        isPlayingServiceMedia = true
-    }
-
-    fun pause() {
-        mediaPlayer!!.pause()
-        isPlayingServiceMedia = false
-    }
 
     fun duration(): Int {
         return mediaPlayer!!.duration
@@ -77,12 +92,37 @@ class MusicService : Service() {
         mediaPlayer!!.seekTo(position)
     }
 
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        var actionMusic = intent!!.getIntExtra("action_music_service", 0)
-        handleActionMusic(actionMusic)
-        return super.onStartCommand(intent, flags, startId)
+    private fun nextSong() {
+        if (mIndex != null) {
+            if (mIndex == DataSongs().listSongs.size - 1) {
+                mIndex = 0
+            } else {
+                mIndex++
+            }
+            initMediaPlayer()
+        }
     }
+
+    private fun prevSong() {
+        if (mIndex != null) {
+            if (mIndex == 0) {
+                mIndex = DataSongs().listSongs.size - 1
+            } else {
+                mIndex--
+            }
+            initMediaPlayer()
+        }
+    }
+
+    private fun initMediaPlayer() {
+        currentSong = DataSongs().listSongs[mIndex]
+        mediaPlayer!!.stop()
+        mediaPlayer!!.release()
+        mediaPlayer = MediaPlayer.create(baseContext, currentSong!!.fileSong)
+        mediaPlayer!!.start()
+        sendNotification(currentSong)
+    }
+
 
     private fun sendNotification(song: Song?) {
         val bitmap = BitmapFactory.decodeResource(resources, song!!.image)
@@ -91,40 +131,46 @@ class MusicService : Service() {
             PendingIntent.getActivity(this, 0, intentBack, PendingIntent.FLAG_CANCEL_CURRENT)
 
         val remoteView = RemoteViews(packageName, R.layout.layout_custom_notification)
-        remoteView.setTextViewText(R.id.tvTitleSong, song!!.title)
-        remoteView.setTextViewText(R.id.tvSingerName, song!!.singer)
-        remoteView.setImageViewBitmap(R.id.imgSong, bitmap)
+        remoteView.setTextViewText(R.id.tvTitleSongPlaying, song!!.title)
+        remoteView.setTextViewText(R.id.tvSingerNamePlaying, song!!.singer)
+        remoteView.setImageViewBitmap(R.id.imgSongPlaying, bitmap)
 
         remoteView.setOnClickPendingIntent(
-            R.id.btnClearNotification,
+            R.id.btnClearNotificationPlaying,
             getPendingIntent(this, Constants.ACTION_CLEAR)
         )
-        if (isPlayingServiceMedia) {
+        if (mediaPlayer!!.isPlaying) {
             remoteView.setOnClickPendingIntent(
-                R.id.btnPausePlayNotification, getPendingIntent(
+                R.id.btnPausePlayNotificationPlaying, getPendingIntent(
                     this,
                     Constants.ACTION_PAUSE
                 )
             )
-            remoteView.setImageViewResource(R.id.btnPausePlayNotification, R.drawable.pause_icon)
-        } else {
+            remoteView.setImageViewResource(
+                R.id.btnPausePlayNotificationPlaying,
+                R.drawable.pause_icon
+            )
+        } else if (!mediaPlayer!!.isPlaying) {
             remoteView.setOnClickPendingIntent(
-                R.id.btnPausePlayNotification, getPendingIntent(
+                R.id.btnPausePlayNotificationPlaying, getPendingIntent(
                     this,
                     Constants.ACTION_RESUME
                 )
             )
-            remoteView.setImageViewResource(R.id.btnPausePlayNotification, R.drawable.play_icon)
+            remoteView.setImageViewResource(
+                R.id.btnPausePlayNotificationPlaying,
+                R.drawable.play_icon
+            )
         }
 
         remoteView.setOnClickPendingIntent(
-            R.id.btnNextNotification, getPendingIntent(
+            R.id.btnNextNotificationPlaying, getPendingIntent(
                 this,
                 Constants.ACTION_NEXT
             )
         )
         remoteView.setOnClickPendingIntent(
-            R.id.btnPrevNotification,
+            R.id.btnPrevNotificationPlaying,
             getPendingIntent(this, Constants.ACTION_PREV)
         )
 
@@ -152,30 +198,28 @@ class MusicService : Service() {
     private fun handleActionMusic(action: Int) {
         when (action) {
             Constants.ACTION_PAUSE -> {
-                isPlayingServiceMedia = false
                 mediaPlayer!!.pause()
+                Log.d("Action Music", "mediaPlayer: " + mediaPlayer!!.isPlaying.toString())
                 sendNotification(currentSong)
             }
             Constants.ACTION_RESUME -> {
-                isPlayingServiceMedia = true
                 mediaPlayer!!.start()
+                Log.d("Action Music", "mediaPlayer: " + mediaPlayer!!.isPlaying.toString())
                 sendNotification(currentSong)
             }
             Constants.ACTION_CLEAR -> {
-                Log.d("Serviceeee", "end service")
-                if (mediaPlayer != null) {
-                    mediaPlayer!!.stop()
-                    mediaPlayer!!.release()
-                    mediaPlayer = null
-                    stopSelf()
-                }
+//                val intent=Intent(this,MusicService::class.java)
+//                stopService(intent)
+                stopSelf()
+                Log.d("Action Music", "end service")
             }
             Constants.ACTION_NEXT -> {
-                sendNotification(currentSong)
-                Log.d("MusicService", "nextsong")
+                nextSong()
+                Log.d("Action Music", "next song")
             }
             Constants.ACTION_PREV -> {
-                sendNotification(currentSong)
+                prevSong()
+                Log.d("Action Music", "prev song")
             }
         }
     }
