@@ -1,65 +1,35 @@
 package com.example.basicmusicapp.fragments
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
+import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowId
+import android.view.Window
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.adapters.SongAdapter
 import com.example.basicmusicapp.databinding.FragmentListSongBinding
 import com.example.basicmusicapp.models.Song
 import com.example.basicmusicapp.repository.DataSongs
-import com.example.basicmusicapp.service.MusicService
-import com.example.basicmusicapp.service.MyService
+import kotlin.random.Random
 
 // TODO: Rename parameter arguments, choose names that match
 class ListSongFragment : Fragment() {
     private lateinit var binding: FragmentListSongBinding
     private lateinit var songAdapter: SongAdapter
     var isBound: Boolean = false
-    private var musicService: MusicService? = null
-//    private val serviceConnection = object : ServiceConnection {
-//        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-//            val binder = service as (MusicService.MyBinder)
-//            musicService = binder.getService()
-//            isBound = true
-//            if(musicService!=null){
-//                Log.d("ListSong", isBound.toString()+ musicService!!.currentSong?.title + musicService!!.isPlaying() )
-//            }
-//            Log.d("ListSong", isBound.toString()+ musicService!!.currentSong?.title + musicService!!.isPlaying() )
-//        }
-//
-//        override fun onServiceDisconnected(name: ComponentName?) {
-//            isBound=false
-//            Log.d("ListSong", isBound.toString()+ musicService!!.currentSong?.title)
-//        }
-//
-//    }
-
-//    private fun connectToService() {
-//        val intent = Intent(requireContext(), MusicService::class.java)
-//        requireContext().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
-//    }
-//
-//    private fun disconnectFromService() {
-//        if (isBound) {
-//            requireContext().unbindService(serviceConnection)
-//            isBound = false
-//        }
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +38,6 @@ class ListSongFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-//        connectToService()
         Log.d("ListSong", "on start")
     }
 
@@ -90,19 +59,65 @@ class ListSongFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-//        disconnectFromService()
     }
 
     private fun init() {
         binding.musicRV.setHasFixedSize(true)
         binding.musicRV.layoutManager = LinearLayoutManager(context)
         songAdapter = SongAdapter(DataSongs().listSongs, object : SongAdapter.onClickListener {
-            override fun onClick(song: Song, index: Int) {
+            override fun onClickToPlaySong(song: Song, index: Int) {
                 changeFragmentPlaySong(song, index)
             }
+
+            override fun onClickToMoreAction(song: Song, index: Int) {
+                showDialog(song)
+            }
         })
+        binding.btnPlayRandom.setOnClickListener {
+            setRandomSong()
+        }
         binding.musicRV.adapter = songAdapter
         binding.tvTotalSongs.text = "Tổng số bài hát: ${DataSongs().listSongs.size}"
+    }
+
+    private fun showDialog(song: Song) {
+        val dialog = context?.let { Dialog(it) }
+        dialog?.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog?.setContentView(R.layout.bottomsheetlayout)
+        val layoutDownload = dialog?.findViewById<LinearLayout>(R.id.layoutDownload)
+        val layoutAddToFavourite = dialog?.findViewById<LinearLayout>(R.id.layoutAddFavourite)
+        val layoutAddToPlayList = dialog?.findViewById<LinearLayout>(R.id.layoutAddToPlayList)
+        val layoutGoToAlbum = dialog?.findViewById<LinearLayout>(R.id.layoutGoToAlbum)
+        val layoutGoToArtist = dialog?.findViewById<LinearLayout>(R.id.layoutGoToArtist)
+        val imageDialog = dialog?.findViewById<ImageView>(R.id.ivSongDialog)
+        val tvTittleSongDialog = dialog?.findViewById<TextView>(R.id.TvTitleSongItemDialog)
+        val tvSingerDialog = dialog?.findViewById<TextView>(R.id.TvSingerItemDialog)
+        imageDialog?.setImageResource(song.image)
+        tvTittleSongDialog?.text = song.title
+        tvSingerDialog?.text = song.singer
+        layoutDownload?.setOnClickListener {
+            Toast.makeText(context, "clicked download", Toast.LENGTH_LONG).show()
+        }
+        layoutAddToFavourite?.setOnClickListener {
+            Toast.makeText(context, "clicked favorite", Toast.LENGTH_LONG).show()
+        }
+        layoutAddToPlayList?.setOnClickListener {
+            Toast.makeText(context, "clicked add to playlist", Toast.LENGTH_LONG).show()
+        }
+        layoutGoToAlbum?.setOnClickListener {
+            Toast.makeText(context, "clicked go to album", Toast.LENGTH_LONG).show()
+        }
+        layoutGoToArtist?.setOnClickListener {
+            Toast.makeText(context, "clicked go to artist", Toast.LENGTH_LONG).show()
+        }
+        dialog?.show()
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog?.window?.attributes?.windowAnimations = R.style.DialogAnimation
+        dialog?.window?.setGravity(Gravity.BOTTOM)
     }
 
     private fun changeFragmentPlaySong(song: Song, index: Int) {
@@ -118,6 +133,11 @@ class ListSongFragment : Fragment() {
         fragmentTransaction.commit()
     }
 
+    private fun setRandomSong() {
+        val randomIndex = Random.nextInt(0, DataSongs().listSongs.size)
+        changeFragmentPlaySong(DataSongs().listSongs[randomIndex], randomIndex)
+    }
+
     private fun getSmallSongPlaying() {
         if (PlaySongFragment.musicService != null) {
             val view = requireActivity().findViewById<FrameLayout>(R.id.frameLayout_song_playing)
@@ -131,6 +151,8 @@ class ListSongFragment : Fragment() {
             fragmentNowSongPlaying.arguments = bundle
             fragmentTransaction?.commit()
             Log.d("FragmentListSong", "get small")
+        } else {
+            Log.d("small:", "music null")
         }
     }
 }

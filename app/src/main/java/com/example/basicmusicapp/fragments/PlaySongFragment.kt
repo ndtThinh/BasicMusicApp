@@ -70,7 +70,7 @@ class PlaySongFragment : Fragment(), ServiceConnection {
 
     override fun onDestroy() {
         super.onDestroy()
-//        disconnectFromService()
+        disconnectFromService()
         Log.d("PlaySong", "on destroy")
     }
 
@@ -221,14 +221,13 @@ class PlaySongFragment : Fragment(), ServiceConnection {
     private fun connectToService() {
         val intent = Intent(requireContext(), MusicService::class.java)
         requireContext().bindService(intent, this, Context.BIND_AUTO_CREATE)
-//        requireContext().startService(intent)
+        requireContext().startService(intent)
     }
 
     private fun disconnectFromService() {
         if (isBound) {
             requireContext().unbindService(this)
             isBound = false
-            musicService = null
             Log.d("Action", "unbind service")
         }
     }
@@ -302,7 +301,6 @@ class PlaySongFragment : Fragment(), ServiceConnection {
 
     override fun onServiceDisconnected(name: ComponentName?) {
         isBound = false
-        musicService = null
     }
 
 

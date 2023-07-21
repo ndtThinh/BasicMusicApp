@@ -8,7 +8,9 @@ import android.os.Bundle
 import android.os.IBinder
 import androidx.fragment.app.Fragment
 import com.example.basicmusicapp.databinding.ActivityMainBinding
+import com.example.basicmusicapp.fragments.AccountFragment
 import com.example.basicmusicapp.fragments.ListSongFragment
+import com.example.basicmusicapp.service.MusicService
 import com.example.basicmusicapp.service.MyService
 
 class MainActivity : AppCompatActivity() {
@@ -19,6 +21,14 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         addFragment(ListSongFragment())
+        binding.apply {
+            accountBtn.setOnClickListener {
+                changeFragment(AccountFragment())
+            }
+            allSongBtn.setOnClickListener {
+                changeFragment(ListSongFragment())
+            }
+        }
 
     }
 
@@ -29,7 +39,16 @@ class MainActivity : AppCompatActivity() {
         fragmentTransaction.commit()
     }
 
+    private fun changeFragment(fragment: Fragment) {
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.frameLayout, fragment)
+        fragmentTransaction.commit()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        val intent = Intent(this, MusicService::class.java)
+        stopService(intent)
     }
 }

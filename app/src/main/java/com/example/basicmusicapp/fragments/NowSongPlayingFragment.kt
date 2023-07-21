@@ -65,29 +65,61 @@ class NowSongPlayingFragment : Fragment() {
             }
             btnNextNotificationPlaying.setOnClickListener {
                 startMyReceiver(Constants.ACTION_NEXT)
+                btnPausePlayNotificationPlaying.setImageResource(R.drawable.pause_icon)
             }
             btnPrevNotificationPlaying.setOnClickListener {
                 startMyReceiver(Constants.ACTION_PREV)
+                btnPausePlayNotificationPlaying.setImageResource(R.drawable.pause_icon)
             }
             btnClearNotificationPlaying.setOnClickListener {
                 val view =
                     requireActivity().findViewById<FrameLayout>(R.id.frameLayout_song_playing)
                 view.visibility = View.GONE
+                startMyReceiver(Constants.ACTION_CLEAR)
+            }
+            imgSongPlaying.setOnClickListener {
+                changeToPlaySongFragment()
+            }
+            tvTitleSongPlaying.setOnClickListener {
+                changeToPlaySongFragment()
             }
         }
         return view
     }
 
+    private fun changeToPlaySongFragment() {
+        val fragmentPlaySongFragment: PlaySongFragment = PlaySongFragment()
+        var fragmentManager = parentFragmentManager
+        var fragmentTransaction = fragmentManager.beginTransaction()
+        val bundle = Bundle()
+        bundle.putSerializable("song", song)
+        bundle.putInt("index", index)
+        fragmentPlaySongFragment.arguments = bundle
+        fragmentTransaction.replace(R.id.frameLayout, fragmentPlaySongFragment)
+        fragmentTransaction.addToBackStack("ok")
+        fragmentTransaction.commit()
+        val view =
+            requireActivity().findViewById<FrameLayout>(R.id.frameLayout_song_playing)
+        view.visibility = View.GONE
+    }
+
     private fun initFragment() {
         if (PlaySongFragment.musicService!!.isPlaying()) {
+//            val currentSong= PlaySongFragment.musicService!!.currentSong
             val bundle = arguments
             if (bundle != null) {
                 song = bundle.getSerializable("songNow") as Song
                 index = bundle.getInt("index")
                 binding.apply {
+//                    if (currentSong != null) {
+//                        imgSongPlaying.setImageResource(currentSong.image)
+//                        tvSingerNamePlaying.text = currentSong!!.singer
+//                        tvTitleSongPlaying.text = currentSong!!.title
+//                    }
                     imgSongPlaying.setImageResource(song!!.image)
                     tvSingerNamePlaying.text = song!!.singer
                     tvTitleSongPlaying.text = song!!.title
+
                 }
             }
         }
@@ -172,6 +204,7 @@ class NowSongPlayingFragment : Fragment() {
 
     private fun setInitNextPrevSong() {
         song = DataSongs().listSongs[index]
+//        song= PlaySongFragment.musicService?.currentSong
         setUiSong()
     }
 
@@ -180,6 +213,7 @@ class NowSongPlayingFragment : Fragment() {
             tvTitleSongPlaying.text = song!!.title
             tvSingerNamePlaying.text = song!!.singer
             imgSongPlaying.setImageResource(song!!.image)
+            btnPausePlayNotificationPlaying.setImageResource(R.drawable.pause_icon)
         }
     }
 

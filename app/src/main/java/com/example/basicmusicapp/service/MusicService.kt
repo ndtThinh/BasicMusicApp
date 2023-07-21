@@ -10,9 +10,9 @@ import android.os.*
 import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import androidx.fragment.app.Fragment
 import com.example.basicmusicapp.Constants
 import com.example.basicmusicapp.MainActivity
+import com.example.basicmusicapp.PlayingSongActivity
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.broadcastreceiver.MyReceiver
 import com.example.basicmusicapp.models.Song
@@ -27,7 +27,6 @@ class MusicService : Service() {
     override fun onBind(intent: Intent?): IBinder? {
         return binder
     }
-
 
     inner class MyBinder : Binder() {
         fun getService(): MusicService {
@@ -58,6 +57,7 @@ class MusicService : Service() {
             mIndex = index
             mediaPlayer = MediaPlayer.create(baseContext, currentSong!!.fileSong)
             mediaPlayer!!.start()
+            autoNextSong()
             sendNotification(currentSong)
         } else {
             currentSong = song
@@ -66,9 +66,16 @@ class MusicService : Service() {
             mediaPlayer!!.release()
             mediaPlayer = MediaPlayer.create(baseContext, currentSong!!.fileSong)
             mediaPlayer!!.start()
+            autoNextSong()
             sendNotification(currentSong)
         }
 
+    }
+
+    private fun autoNextSong() {
+        mediaPlayer!!.setOnCompletionListener {
+            nextSong()
+        }
     }
 
     fun isPlaying(): Boolean {
@@ -120,13 +127,14 @@ class MusicService : Service() {
         mediaPlayer!!.release()
         mediaPlayer = MediaPlayer.create(baseContext, currentSong!!.fileSong)
         mediaPlayer!!.start()
+        autoNextSong()
         sendNotification(currentSong)
     }
 
 
     private fun sendNotification(song: Song?) {
         val bitmap = BitmapFactory.decodeResource(resources, song!!.image)
-        val intentBack = Intent(this, MainActivity::class.java)
+        val intentBack = Intent(this, PlayingSongActivity::class.java)
         val pendingIntent =
             PendingIntent.getActivity(this, 0, intentBack, PendingIntent.FLAG_CANCEL_CURRENT)
 

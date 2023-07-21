@@ -15,6 +15,7 @@ class SongAdapter(
         val title = binding.TvTitleSongItem
         val singer = binding.TvSingerItem
         val image = binding.ivSong
+        val moreAction = binding.moreActionBtn
         val root = binding.root
     }
 
@@ -36,7 +37,10 @@ class SongAdapter(
             image.setImageResource(song.image)
         }
         holder.root.setOnClickListener {
-            playListener.onClick(song, position)
+            playListener.onClickToPlaySong(song, position)
+        }
+        holder.moreAction.setOnClickListener {
+            playListener.onClickToMoreAction(song, position)
         }
     }
 
@@ -45,6 +49,7 @@ class SongAdapter(
     }
 
     interface onClickListener {
-        fun onClick(song: Song, index: Int)
+        fun onClickToPlaySong(song: Song, index: Int)
+        fun onClickToMoreAction(song: Song, index: Int)
     }
 }

@@ -4,65 +4,54 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragments.ListSongFragment">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:text="Đã Tải"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="35sp"
+            android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/shuffleBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:contentDescription="@string/shuffle_btn"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:drawableTop="@drawable/shuffle_icon"
-                android:text="@string/shuffle_btn"
-                android:textColor="@color/black"
-                android:textAllCaps="false"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nhạc đã tải hoạc có trên thiết bị"
+            android:textAlignment="center"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="20sp"
+            android:textStyle="normal" />
 
-            <Button
-                android:id="@+id/playlistsBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:contentDescription="@string/favourite_btn"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:drawableTop="@drawable/playlist_icon"
-                android:text="@string/playlists_btn"
-                android:textColor="@color/black"
-                android:textAllCaps="false"/>
-
-            <Button
-                android:id="@+id/favouriteBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:contentDescription="@string/playlists_btn"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:drawableTop="@drawable/favorite_icon"
-                android:text="@string/favourite_btn"
-                android:textColor="@color/black"
-                android:textAllCaps="false"/>
-        </LinearLayout>
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/btnPlayRandom"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:backgroundTint="@color/purple_200"
+            android:text="@string/random_song"
+            android:textAlignment="center"
+            android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/tvTotalSongs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/total_songs"
-            android:textSize="20sp"
             android:layout_margin="10dp"
-            android:textColor="@color/black"/>
+            android:text="@string/total_songs"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/musicRV"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
     </LinearLayout>
 
 </FrameLayout>

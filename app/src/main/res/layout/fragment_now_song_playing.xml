@@ -2,15 +2,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
+    android:layout_height="65dp"
+    android:background="@color/purple_200"
     android:padding="10dp"
     tools:ignore="ExtraText">
     tools:context=".fragments.NowSongPlayingFragment">
 
+
     <ImageView
         android:id="@+id/imgSongPlaying"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         android:layout_centerVertical="true"
         android:scaleType="centerCrop"
         android:src="@drawable/music_player" />
@@ -28,57 +30,59 @@
             android:id="@+id/tvTitleSongPlaying"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
             android:text="@string/app_name"
-            android:textColor="@color/black"
-            android:textSize="15sp"
-            android:layout_marginBottom="5dp"/>
+            android:textColor="@color/white"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tvSingerNamePlaying"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="13sp" />
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
     </LinearLayout>
+
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
         android:layout_alignParentEnd="true"
+        android:layout_marginHorizontal="2dp"
         android:gravity="center_vertical"
-        android:layout_marginHorizontal="5dp">
+        android:orientation="horizontal">
+
         <ImageButton
             android:id="@+id/btnPrevNotificationPlaying"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/skip_prev_icon"
-            android:background="@color/white"
-            android:layout_marginRight="3dp"/>
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginRight="3dp"
+            android:background="@color/purple_200"
+            android:src="@drawable/skip_prev_icon" />
 
         <ImageButton
             android:id="@+id/btnPausePlayNotificationPlaying"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/pause_icon"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_marginRight="3dp"
-            android:background="@color/white"/>
+            android:background="@color/purple_200"
+            android:src="@drawable/pause_icon" />
 
         <ImageButton
             android:id="@+id/btnNextNotificationPlaying"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/skip_next_icon"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_marginRight="3dp"
-            android:background="@color/white"/>
+            android:background="@color/purple_200"
+            android:src="@drawable/skip_next_icon" />
 
         <ImageButton
             android:id="@+id/btnClearNotificationPlaying"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/clear_icon"
-            android:background="@color/white"/>
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:background="@color/purple_200"
+            android:src="@drawable/clear_icon" />
     </LinearLayout>
 
 </RelativeLayout>
