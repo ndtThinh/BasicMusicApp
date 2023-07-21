@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.example.basicmusicapp.databinding.ActivityMainBinding
 import com.example.basicmusicapp.fragments.AccountFragment
 import com.example.basicmusicapp.fragments.ListSongFragment
+import com.example.basicmusicapp.fragments.LoginFragment
 import com.example.basicmusicapp.service.MusicService
 import com.example.basicmusicapp.service.MyService
 
@@ -20,7 +21,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        addFragment(ListSongFragment())
+//        addFragment(ListSongFragment())
+        addFragment(LoginFragment())
         binding.apply {
             accountBtn.setOnClickListener {
                 changeFragment(AccountFragment())
