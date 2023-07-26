@@ -8,5 +8,6 @@ object Constants {
     const val ACTION_CLEAR = 3
     const val ACTION_NEXT = 4
     const val ACTION_PREV = 5
+    const val DELAY_TIME =3000
 
 }

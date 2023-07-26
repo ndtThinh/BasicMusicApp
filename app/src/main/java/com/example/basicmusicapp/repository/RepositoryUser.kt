@@ -1,5 +1,6 @@
 package com.example.basicmusicapp.repository
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.basicmusicapp.models.User
@@ -9,9 +10,9 @@ import com.google.firebase.ktx.Firebase
 
 class RepositoryUser {
     private var fireStore: FirebaseFirestore? = null
-    private var userLiveData: MutableLiveData<ArrayList<User>>? = null
-    fun getUserLiveData(): MutableLiveData<ArrayList<User>>? {
-        return userLiveData
+    private var userCurrentLiveData = MutableLiveData<ArrayList<User>>()
+    fun getUserCurrentLiveData(): MutableLiveData<ArrayList<User>>? {
+        return userCurrentLiveData
     }
 
     companion object {
@@ -24,7 +25,11 @@ class RepositoryUser {
 
     interface OnLoginSigUpListener {
         fun onExits(exits: Boolean)
-        fun onLogin(confirm: Boolean)
+        fun onLogin(confirm: Boolean, userId: Long)
+    }
+
+    interface OnUpdateUserListener {
+        fun onUpdateUser(boolean: Boolean)
     }
 
     fun register(
@@ -75,28 +80,91 @@ class RepositoryUser {
         }
     }
 
-    fun login(userName: String, password: String,onLoginSigUpListener: OnLoginSigUpListener) {
+    fun login(userName: String, password: String, onLoginSigUpListener: OnLoginSigUpListener) {
         fireStore!!.collection("User").get()
             .addOnSuccessListener {
-                if(!it.isEmpty){
-                    var isConfirm=false
-                    for (item in it){
-                        var mUserName=item.getString("userName")
-                        var mPassword=item.getString("passWord")
-                        if(userName==mUserName && password==mPassword){
-                            isConfirm=true
+                if (!it.isEmpty) {
+                    var userIdConfirm: Long = -1
+                    var isConfirm = false
+                    for (item in it) {
+                        var mUserName = item.getString("userName")
+                        var mPassword = item.getString("passWord")
+                        userIdConfirm = item.getLong("userId")!!
+                        if (userName == mUserName && password == mPassword) {
+                            isConfirm = true
                             break
                         }
                     }
-                    if(isConfirm){
-                        onLoginSigUpListener.onLogin(true)
-                    }
-                    else{
-                        onLoginSigUpListener.onLogin(false)
+                    if (isConfirm) {
+                        onLoginSigUpListener.onLogin(true, userIdConfirm)
+                    } else {
+                        onLoginSigUpListener.onLogin(false, userIdConfirm)
                     }
                 }
             }.addOnFailureListener {
 
             }
+    }
+
+    fun getUserCurrent(userId: Long) {
+        var listUser = ArrayList<User>()
+        fireStore?.collection("User")?.whereEqualTo("userId", userId)
+            ?.get()?.addOnSuccessListener {
+                if (!it.isEmpty) {
+                    for (item in it) {
+                        val userName = item.getString("userName").toString()
+                        val password = item.getString("passWord").toString()
+                        val email = item.getString("email").toString()
+                        val userId = item.getLong("userId") as Long
+                        val fileImage = item.getString("fileImage").toString()
+                        var userCurrent = User(userName, password, email, userId, fileImage)
+                        listUser.add(userCurrent)
+                        Log.d("Account", "User Repository: $userName$userId")
+                    }
+                    userCurrentLiveData?.value = listUser
+                    Log.d("Account", "User Repository: ${userCurrentLiveData?.value!!.size}")
+                }
+            }?.addOnFailureListener {
+                Log.d("account : ", "Not found any user")
+                userCurrentLiveData?.value = ArrayList()
+            }
+    }
+
+    fun checkLogged(context: Context): Long {
+        val sharedPreferences = context.getSharedPreferences("Login", Context.MODE_PRIVATE)
+        return sharedPreferences.getLong("userId", -1)
+    }
+
+    fun updateUser(user: User, onUpdateUserListener: OnUpdateUserListener) {
+        val dataUpdate = hashMapOf(
+            "userName" to user.userName,
+            "passWord" to user.passWord,
+            "email" to user.email,
+            "userId" to user.userId,
+            "fileImage" to user.userName
+        )
+        fireStore?.collection("User")?.document(user.userName)
+            ?.update(dataUpdate as Map<String, Any>)
+            ?.addOnSuccessListener {
+                onUpdateUserListener.onUpdateUser(true)
+                Log.d("Update", "update user successfully")
+            }?.addOnFailureListener {
+                onUpdateUserListener.onUpdateUser(false)
+                Log.d("Update", "update image failed")
+            }
+    }
+
+    fun keepLoginInUser(userId: Long, context: Context) {
+        val sharedPreferences = context.getSharedPreferences("Login", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putLong("userId", userId)
+        editor.apply()
+    }
+
+    fun logOutUser(context: Context) {
+        val sharedPreferences = context.getSharedPreferences("Login", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.remove("userId")
+        editor.apply()
     }
 }

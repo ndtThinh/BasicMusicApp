@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/homeNav"
+        android:icon="@drawable/note_music_icon"
+        android:title="Khám phá" />
+    <item
+        android:id="@+id/songsNav"
+        android:icon="@drawable/music_song_icon"
+        android:title="Bài hát" />
+    <item
+        android:id="@+id/albumNav"
+        android:icon="@drawable/album_icon"
+        android:title="Album" />
+    <item
+        android:id="@+id/accountNav"
+        android:icon="@drawable/account_icon"
+        android:title="Cá nhân" />
+
+
+</menu>

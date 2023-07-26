@@ -1,12 +1,10 @@
 package com.example.basicmusicapp.fragments
 
-import android.app.ProgressDialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.basicmusicapp.databinding.FragmentRegisterBinding
@@ -45,13 +43,13 @@ class RegisterFragment : Fragment() {
                 fragmentManager.popBackStack()
             }
             btnSignUp.setOnClickListener {
-                signIn()
+                signUp()
             }
         }
         return view
     }
 
-    private fun signIn() {
+    private fun signUp() {
         if (isEmpty()) {
             actionViewBegin()
             viewModelLoginRegisterFragment.registerViewModel(
@@ -75,8 +73,10 @@ class RegisterFragment : Fragment() {
                         }
                     }
 
-                    override fun onLogin(confirm: Boolean) {
+                    override fun onLogin(confirm: Boolean, userId: Long) {
+                        TODO("Not yet implemented")
                     }
+
                 })
         }
     }

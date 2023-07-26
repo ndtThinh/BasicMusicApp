@@ -1,11 +1,12 @@
 package com.example.basicmusicapp.fragments
 
+import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.databinding.FragmentLoginBinding
@@ -15,13 +16,26 @@ import com.example.basicmusicapp.viewmodels.ViewModelLoginRegisterFragment
 class LoginFragment : Fragment() {
     private lateinit var binding: FragmentLoginBinding
     private lateinit var viewModelLoginRegisterFragment: ViewModelLoginRegisterFragment
+    private lateinit var onChangScreen: OnChangScreen
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    interface OnChangScreen {
+        fun onChanged(id: Long?)
     }
 
     private var userName = ""
     private var password = ""
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        try {
+            onChangScreen = context as (OnChangScreen)
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement OnButtonClickListener")
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -52,13 +66,19 @@ class LoginFragment : Fragment() {
                     override fun onExits(exits: Boolean) {
                     }
 
-                    override fun onLogin(confirm: Boolean) {
+                    override fun onLogin(confirm: Boolean, userId: Long) {
                         if (confirm) {
                             actionViewEnd()
-                            changeFragment(ListSongFragment())
                             Toast.makeText(context, "Đăng nhập thành công", Toast.LENGTH_LONG)
                                 .show()
-
+                            context?.let {
+                                viewModelLoginRegisterFragment.keepLoginUser(
+                                    userId,
+                                    it
+                                )
+                            }
+                            changeFragment(HomeFragment())
+                            onChangScreen.onChanged(userId)
                         } else {
                             actionViewEnd()
                             Toast.makeText(
@@ -66,9 +86,10 @@ class LoginFragment : Fragment() {
                                 "Tài khoản hoặc mật khẩu không đúng",
                                 Toast.LENGTH_LONG
                             ).show()
-
+                            binding.tvMessageLogin.visibility = View.VISIBLE
                         }
                     }
+
 
                 })
         }
