@@ -63,6 +63,9 @@ class AccountFragment : Fragment {
                 userIdCurrent?.let { it1 -> SettingAccountFragment(it1) }
                     ?.let { it2 -> changeFragment(it2) }
             }
+            btnMySongs.setOnClickListener {
+                changeFragment(UpLoadSongFragment())
+            }
         }
         return view
     }
