@@ -17,17 +17,18 @@ class ViewModelLoginRegisterFragment : ViewModel() {
         userName: String,
         password: String,
         email: String,
+        singerName:String?,
         exitsListener: RepositoryUser.OnLoginSigUpListener
     ) {
         mRepositoryUser.register(
             userName,
             password,
             email,
+            singerName,
             object : RepositoryUser.OnLoginSigUpListener {
                 override fun onExits(exits: Boolean) {
                     exitsListener.onExits(exits)
                 }
-
                 override fun onLogin(confirm: Boolean, userId: Long) {
 
                 }
@@ -46,7 +47,6 @@ class ViewModelLoginRegisterFragment : ViewModel() {
             override fun onLogin(confirm: Boolean, userId: Long) {
                 loginSigUpListener.onLogin(confirm,userId)
             }
-
         })
     }
 

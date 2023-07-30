@@ -16,8 +16,8 @@ object Constants {
     const val STYLE_BEAT = 5
     const val STYLE_RAP = 6
     const val STYLE_REMIX = 7
-    const val STYLE_LOFI = 7
-    const val STYLE_EURO = 7
-    const val STYLE_FUN = 7
+    const val STYLE_LOFI = 8
+    const val STYLE_EURO = 9
+    const val STYLE_FUN = 10
 
 }

@@ -36,6 +36,7 @@ class RepositoryUser {
         userName: String,
         password: String,
         email: String,
+        singerName: String?,
         exitsListener: OnLoginSigUpListener
     ) {
         var newUserId: Long = 1
@@ -57,12 +58,27 @@ class RepositoryUser {
                         }
                     }
                     newUserId++
+                    var newSingerId = 0
+                    if (singerName == "") {
+                        newSingerId = 0
+                    } else {
+                        for (item in it) {
+                            var singerId = item.getLong("singerId")
+                            if (singerId != null) {
+                                if (singerId > newUserId)
+                                    newUserId = singerId
+                            }
+                        }
+                        newSingerId++
+                    }
                     val data = hashMapOf(
                         "userName" to userName,
                         "passWord" to password,
                         "email" to email,
                         "userId" to newUserId,
-                        "fileImage" to ""
+                        "fileImage" to "",
+                        "singerName" to singerName,
+                        "singerId" to newSingerId
                     )
                     fireStore!!.collection("User").document(userName).set(data)
                         .addOnSuccessListener {
@@ -73,7 +89,6 @@ class RepositoryUser {
                             Log.d("Register", "fail to register")
                         }
                 }
-
             } else {
                 Log.d("Register", "Khong thay user nao")
             }
@@ -117,7 +132,10 @@ class RepositoryUser {
                         val email = item.getString("email").toString()
                         val userId = item.getLong("userId") as Long
                         val fileImage = item.getString("fileImage").toString()
-                        var userCurrent = User(userName, password, email, userId, fileImage)
+                        val singerName = item.getString("singerName").toString()
+                        val singerId = item.getLong("singerId") as Long
+                        var userCurrent =
+                            User(userName, password, email, userId, fileImage, singerName, singerId)
                         listUser.add(userCurrent)
                         Log.d("Account", "User Repository: $userName$userId")
                     }
@@ -141,7 +159,9 @@ class RepositoryUser {
             "passWord" to user.passWord,
             "email" to user.email,
             "userId" to user.userId,
-            "fileImage" to user.userName
+            "fileImage" to user.userName,
+            "singerName" to user.singerName,
+            "singerId" to user.singerId
         )
         fireStore?.collection("User")?.document(user.userName)
             ?.update(dataUpdate as Map<String, Any>)

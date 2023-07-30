@@ -21,6 +21,8 @@ class SettingAccountFragment : Fragment {
     private lateinit var viewModelAccountFragment: ViewModelAccountFragment
     private var imageUri: Uri? = null
     private var isHasImage: Boolean = false
+    private var nameSinger: String = ""
+    private var singerId: Long = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -72,17 +74,25 @@ class SettingAccountFragment : Fragment {
         var userName = binding.tvSettingUserName.text.trim().toString()
         var password = binding.editSettingPassword.text.trim().toString()
         var email = binding.editSettingEmail.text.trim().toString()
+        nameSinger = binding.editSettingNameSinger.text.toString()
         var updateUser: User? = null
-
         if (isHasImage) {
             var fileImage = userName
-            updateUser = userIdCurrent?.let { User(userName, password, email, it, fileImage) }
+            updateUser =
+                userIdCurrent?.let {
+                    User(userName, password, email, it, fileImage, nameSinger, singerId)
+                }
         } else {
             if (imageUri != null) {
                 var fileImage = userName
-                updateUser = userIdCurrent?.let { User(userName, password, email, it, fileImage) }
+                updateUser =
+                    userIdCurrent?.let {
+                        User(userName, password, email, it, fileImage, nameSinger, singerId)
+                    }
             } else {
-                updateUser = userIdCurrent?.let { User(userName, password, email, it, "") }
+                updateUser = userIdCurrent?.let {
+                    User(userName, password, email, it, "", nameSinger, singerId)
+                }
             }
         }
         if (updateUser != null) {
@@ -119,6 +129,15 @@ class SettingAccountFragment : Fragment {
                 if (t != null) {
                     for (item in t) {
                         binding.apply {
+                            if (item.singerName != "") {
+                                tvKindOfAccount.text = "Nhà phát hành"
+                                infoSettingSinger.visibility = View.VISIBLE
+                                tvSingerIdSetting.text = item.singerId.toString()
+                                editSettingNameSinger.setText(item.singerName)
+                                singerId = item.singerId
+                            } else {
+                                tvKindOfAccount.text = "Người dùng cơ bản"
+                            }
                             val mRepositoryImage = RepositoryImage()
                             mRepositoryImage.readImage(item.userName,
                                 object : RepositoryImage.OnGetImageListener {

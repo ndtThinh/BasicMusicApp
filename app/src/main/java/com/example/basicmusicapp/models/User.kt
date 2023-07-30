@@ -5,6 +5,8 @@ class User(
     var passWord: String,
     var email: String,
     var userId: Long,
-    var fileImage:String
+    var fileImage:String,
+    var singerName:String,
+    var singerId:Long,
 ) {
 }

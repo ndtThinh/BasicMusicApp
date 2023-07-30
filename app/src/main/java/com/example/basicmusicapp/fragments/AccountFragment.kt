@@ -7,26 +7,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.Splash
 import com.example.basicmusicapp.databinding.FragmentAccountBinding
-import com.example.basicmusicapp.models.User
 import com.example.basicmusicapp.repository.RepositoryImage
 import com.example.basicmusicapp.repository.RepositoryUser
 import com.example.basicmusicapp.viewmodels.ViewModelAccountFragment
-import com.example.basicmusicapp.viewmodels.ViewModelLoginRegisterFragment
-import org.checkerframework.common.returnsreceiver.qual.This
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
 class AccountFragment : Fragment {
 
     private lateinit var binding: FragmentAccountBinding
     private lateinit var viewModelAccountFragment: ViewModelAccountFragment
     private var userIdCurrent: Long? = null
+    private var singerIdCurrent: Long = 0
+    private var singerName: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -64,7 +60,15 @@ class AccountFragment : Fragment {
                     ?.let { it2 -> changeFragment(it2) }
             }
             btnMySongs.setOnClickListener {
-                changeFragment(UpLoadSongFragment())
+                if (singerIdCurrent == 0L) {
+                    Toast.makeText(
+                        context,
+                        "Tài khoản của bạn không có quyền truy cập này",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    changeFragment(UpLoadSongFragment(singerIdCurrent, singerName))
+                }
             }
         }
         return view
@@ -88,6 +92,8 @@ class AccountFragment : Fragment {
                                     override fun onGetImage(boolean: Boolean) {
                                         tvUserName.text = item.userName
                                         tvEmail.text = item.email
+                                        singerIdCurrent = item.singerId
+                                        singerName = item.singerName
                                         if (boolean) {
                                             binding.imgUser.setImageBitmap(mRepositoryImage.bitmap)
                                         } else {

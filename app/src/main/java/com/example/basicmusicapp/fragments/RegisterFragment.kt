@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import com.example.basicmusicapp.R
 import com.example.basicmusicapp.databinding.FragmentRegisterBinding
 import com.example.basicmusicapp.repository.RepositoryUser
 import com.example.basicmusicapp.viewmodels.ViewModelLoginRegisterFragment
@@ -15,14 +16,21 @@ import com.example.basicmusicapp.viewmodels.ViewModelLoginRegisterFragment
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
 class RegisterFragment : Fragment() {
-
-    private lateinit var binding: FragmentRegisterBinding
     private lateinit var viewModelLoginRegisterFragment: ViewModelLoginRegisterFragment
 
+    companion object {
+        private lateinit var binding: FragmentRegisterBinding
+        fun actionViewBegin() {
+            binding.progressBarSignUp.visibility = View.VISIBLE
+            binding.layoutSignUp.alpha = 0.5f
+        }
 
-    private var userName = ""
-    private var password = ""
-    private var email = ""
+        fun actionViewEnd() {
+            binding.progressBarSignUp.visibility = View.GONE
+            binding.layoutSignUp.alpha = 1f
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,91 +45,28 @@ class RegisterFragment : Fragment() {
         val view = binding.root
         viewModelLoginRegisterFragment =
             ViewModelProvider(this).get(ViewModelLoginRegisterFragment::class.java)
+        changeFragment(RegisterUserFragment())
         binding.apply {
+            menuRegister.setOnItemSelectedListener {
+                when (it.itemId) {
+                    R.id.itemUserSimple -> changeFragment(RegisterUserFragment())
+                    R.id.itemSinger -> changeFragment(RegisterSingerFragment())
+                }
+                return@setOnItemSelectedListener true
+            }
             btnBack.setOnClickListener {
                 val fragmentManager = parentFragmentManager
                 fragmentManager.popBackStack()
-            }
-            btnSignUp.setOnClickListener {
-                signUp()
             }
         }
         return view
     }
 
-    private fun signUp() {
-        if (isEmpty()) {
-            actionViewBegin()
-            viewModelLoginRegisterFragment.registerViewModel(
-                userName,
-                password,
-                email,
-                object : RepositoryUser.OnLoginSigUpListener {
-                    override fun onExits(exits: Boolean) {
-                        if (exits) {
-                            Toast.makeText(context, "UserName is exits", Toast.LENGTH_LONG)
-                                .show()
-                            actionViewEnd()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Đăng ký thành công\n Quay lại đăng nhập để sử dụng dịch vụ",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            actionViewEnd()
-                            emptyInfo()
-                        }
-                    }
-
-                    override fun onLogin(confirm: Boolean, userId: Long) {
-                        TODO("Not yet implemented")
-                    }
-
-                })
-        }
+    private fun changeFragment(fragment: Fragment) {
+        val fragmentManager = parentFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.layoutRegisters, fragment)
+        fragmentTransaction.commit()
     }
 
-    private fun isEmpty(): Boolean {
-        userName = binding.editUserName.text.trim().toString()
-        password = binding.editPassword.text.trim().toString()
-        email = binding.editEmail.text.trim().toString()
-        if (userName == "") {
-            Toast.makeText(context, "Vui lòng điền tài khoản", Toast.LENGTH_LONG).show()
-            return false
-        }
-        if (email == "") {
-            Toast.makeText(context, "Vui lòng điền email", Toast.LENGTH_LONG).show()
-            return false
-        }
-        if (password == "") {
-            Toast.makeText(context, "Vui lòng điền mật khẩu", Toast.LENGTH_LONG).show()
-            return false
-        }
-        if (binding.editPassword.text.trim().toString() != binding.editConfirmPassword.text.trim()
-                .toString()
-        ) {
-            Toast.makeText(context, "Xác nhận lại mật khẩu", Toast.LENGTH_LONG).show()
-            return false
-        }
-        return true
-    }
-
-    private fun emptyInfo() {
-        binding.apply {
-            editEmail.text = null
-            editPassword.text = null
-            editUserName.text = null
-            editConfirmPassword.text = null
-        }
-    }
-
-    private fun actionViewBegin() {
-        binding.progressBarSignUp.visibility = View.VISIBLE
-        binding.layoutSignUp.alpha = 0.5f
-    }
-
-    private fun actionViewEnd() {
-        binding.progressBarSignUp.visibility = View.GONE
-        binding.layoutSignUp.alpha = 1f
-    }
 }
