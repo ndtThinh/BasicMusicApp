@@ -1,16 +1,25 @@
 package com.example.basicmusicapp.adapters
 
-
+import android.content.Context
+import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.basicmusicapp.databinding.LayoutItemSongBinding
 import com.example.basicmusicapp.models.Song
+import com.example.basicmusicapp.models.SongMusic
+import com.squareup.picasso.Picasso
 
-class SongAdapter(
-    private var listSong: ArrayList<Song>,
-    private val playListener: OnClickListener
-) : RecyclerView.Adapter<SongAdapter.MyViewHolder>() {
+class SongMusicAdapter(
+    var listSong: ArrayList<SongMusic>,
+    var onclickListener: OnclickListener
+) : RecyclerView.Adapter<SongMusicAdapter.MyViewHolder>() {
+    interface OnclickListener {
+        fun onClickToPlaySong(song: SongMusic, index: Int)
+        fun onClickToMoreAction(song: SongMusic, index: Int)
+    }
+
     class MyViewHolder(binding: LayoutItemSongBinding) : RecyclerView.ViewHolder(binding.root) {
         val title = binding.TvTitleSongItem
         val singer = binding.TvSingerItem
@@ -30,31 +39,22 @@ class SongAdapter(
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val song = listSong[position]
+        val songMusic = listSong[position]
         holder.apply {
-            title.text = song.title
-            singer.text = song.singer
-            image.setImageResource(song.image)
+            title.text = songMusic.nameSong
+            singer.text = songMusic.nameSinger
+            Picasso.get().load(songMusic.imageSong).into(image)
         }
         holder.root.setOnClickListener {
-            playListener.onClickToPlaySong(song, position)
+            onclickListener.onClickToPlaySong(songMusic, position)
         }
         holder.moreAction.setOnClickListener {
-            playListener.onClickToMoreAction(song, position)
+            onclickListener.onClickToMoreAction(songMusic, position)
         }
     }
 
     override fun getItemCount(): Int {
         return listSong.size
     }
-
-    fun setFilter(mListSong: ArrayList<Song>) {
-        this.listSong = mListSong
-        notifyDataSetChanged()
-    }
-
-    interface OnClickListener {
-        fun onClickToPlaySong(song: Song, index: Int)
-        fun onClickToMoreAction(song: Song, index: Int)
-    }
 }
+

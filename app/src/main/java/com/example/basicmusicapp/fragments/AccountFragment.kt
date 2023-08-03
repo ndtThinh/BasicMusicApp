@@ -14,6 +14,7 @@ import com.example.basicmusicapp.databinding.FragmentAccountBinding
 import com.example.basicmusicapp.repository.RepositoryImage
 import com.example.basicmusicapp.repository.RepositoryUser
 import com.example.basicmusicapp.viewmodels.ViewModelAccountFragment
+import com.squareup.picasso.Picasso
 
 
 class AccountFragment : Fragment {
@@ -85,25 +86,18 @@ class AccountFragment : Fragment {
             ) { t ->
                 if (t != null) {
                     for (item in t) {
-                        binding.apply {
-                            val mRepositoryImage = RepositoryImage()
-                            mRepositoryImage.readImage(item.userName,
-                                object : RepositoryImage.OnGetImageListener {
-                                    override fun onGetImage(boolean: Boolean) {
-                                        tvUserName.text = item.userName
-                                        tvEmail.text = item.email
-                                        singerIdCurrent = item.singerId
-                                        singerName = item.singerName
-                                        if (boolean) {
-                                            binding.imgUser.setImageBitmap(mRepositoryImage.bitmap)
-                                        } else {
-                                            binding.imgUser.setImageResource(R.drawable.account_icon)
-                                        }
-                                        actionViewEnd()
-                                    }
-
-                                })
+                        if (item.fileImage == "") {
+                            binding.imgUser.setImageResource(R.drawable.account_icon)
+                        } else {
+                            Picasso.get().load(item.fileImage).into(binding.imgUser)
                         }
+                        binding.apply {
+                            tvUserName.text = item.userName
+                            tvEmail.text = item.email
+                            singerIdCurrent = item.singerId
+                            singerName = item.singerName
+                        }
+                        actionViewEnd()
                     }
                 }
             }

@@ -14,7 +14,7 @@ import android.view.Window
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
+import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,6 +23,9 @@ import com.example.basicmusicapp.adapters.SongAdapter
 import com.example.basicmusicapp.databinding.FragmentListSongBinding
 import com.example.basicmusicapp.models.Song
 import com.example.basicmusicapp.repository.DataSongs
+import java.text.Normalizer
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 // TODO: Rename parameter arguments, choose names that match
@@ -64,7 +67,7 @@ class ListSongFragment : Fragment() {
     private fun init() {
         binding.musicRV.setHasFixedSize(true)
         binding.musicRV.layoutManager = LinearLayoutManager(context)
-        songAdapter = SongAdapter(DataSongs().listSongs, object : SongAdapter.onClickListener {
+        songAdapter = SongAdapter(DataSongs().listSongs, object : SongAdapter.OnClickListener {
             override fun onClickToPlaySong(song: Song, index: Int) {
                 changeFragmentPlaySong(song, index)
             }
@@ -78,6 +81,29 @@ class ListSongFragment : Fragment() {
         }
         binding.musicRV.adapter = songAdapter
         binding.tvTotalSongs.text = "Tổng số bài hát: ${DataSongs().listSongs.size}"
+        binding.searchBoxListSong.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                var mListSong = ArrayList<Song>()
+                for (item in DataSongs().listSongs) {
+                    var removeDiaLowerStr =
+                        removeVietnameseDiacritics(item.singer).toLowerCase(Locale.ROOT)
+                    if (removeDiaLowerStr.contains(newText!!))
+                        mListSong.add(item)
+                }
+                songAdapter.setFilter(mListSong = mListSong)
+                return true
+            }
+
+        })
+    }
+
+    fun removeVietnameseDiacritics(input: String): String {
+        val temp = Normalizer.normalize(input, Normalizer.Form.NFD)
+        return temp.replace("\\p{M}".toRegex(), "")
     }
 
     private fun showDialog(song: Song) {

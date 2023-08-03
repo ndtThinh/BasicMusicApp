@@ -39,6 +39,16 @@
             android:textAlignment="center"
             android:textColor="@color/white" />
 
+        <SearchView
+            android:id="@+id/searchBoxListSong"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@drawable/searchview_background"
+            android:iconifiedByDefault="false"
+            android:queryBackground="@android:color/transparent"
+            android:queryHint="Tên ca sĩ" />
+
         <TextView
             android:id="@+id/tvTotalSongs"
             android:layout_width="match_parent"

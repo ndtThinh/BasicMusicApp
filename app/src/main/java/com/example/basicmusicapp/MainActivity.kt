@@ -7,10 +7,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.basicmusicapp.databinding.ActivityMainBinding
-import com.example.basicmusicapp.fragments.AccountFragment
-import com.example.basicmusicapp.fragments.HomeFragment
-import com.example.basicmusicapp.fragments.ListSongFragment
-import com.example.basicmusicapp.fragments.LoginFragment
+import com.example.basicmusicapp.fragments.*
 import com.example.basicmusicapp.service.MusicService
 
 class MainActivity : AppCompatActivity(), LoginFragment.OnChangScreen {
@@ -36,6 +33,7 @@ class MainActivity : AppCompatActivity(), LoginFragment.OnChangScreen {
                 R.id.homeNav -> changeFragment(HomeFragment())
                 R.id.songsNav -> changeFragment(ListSongFragment())
                 R.id.accountNav -> changeFragment(AccountFragment(userId!!))
+                R.id.albumNav-> changeFragment(AlbumSingerFragment())
             }
             return@setOnItemSelectedListener true
         }

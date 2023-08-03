@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -11,7 +12,9 @@ import java.io.File
 
 class RepositoryImage {
     private var storeReference: StorageReference? = null
+    var liveDataUrlStr = MutableLiveData<String>()
     var bitmap: Bitmap? = null
+    var urlImage: String = ""
 
     constructor() {
         storeReference = FirebaseStorage.getInstance().reference
@@ -61,5 +64,31 @@ class RepositoryImage {
                 Log.d("ReadUser", "get image failed")
                 onGetImageListener.onGetImage(false)
             }
+    }
+
+    fun getUrlImage(imageName: String, onGetImageListener: OnGetImageListener) {
+        storeReference!!.child("images/$imageName").downloadUrl.addOnSuccessListener {
+            urlImage = it.toString()
+            onGetImageListener.onGetImage(true)
+            Log.d("Get Url:", "Get Image URL successfully")
+        }.addOnFailureListener {
+            onGetImageListener.onGetImage(false)
+            Log.d("Get Url:", "Get Image URL successfully")
+        }
+    }
+
+    fun getListImage() {
+        storeReference!!.child("images/").listAll().addOnSuccessListener {
+            var imageUrl = mutableListOf<String>()
+            var imageName = mutableListOf<String>()
+            for (item in it.items) {
+                imageName.add(item.name)
+                item.downloadUrl.addOnSuccessListener {
+                    imageUrl.add(it.toString())
+                }
+            }
+        }.addOnFailureListener {
+
+        }
     }
 }

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,7 +30,7 @@ class UpLoadSongFragment : Fragment {
     private var imageUri: Uri? = null
     private var songUri: Uri? = null
 
-    val textWatcher = object : TextWatcher {
+    private val textWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
         }
@@ -120,12 +121,14 @@ class UpLoadSongFragment : Fragment {
                             "Upload new song successfully: $nameSong",
                             Toast.LENGTH_LONG
                         ).show()
+                        Log.d("Upload Song","Upload song successfully")
                     } else {
                         Toast.makeText(
                             context,
                             "Upload new song failed: $nameSong",
                             Toast.LENGTH_LONG
                         ).show()
+                        Log.d("Upload Song","Upload song failed")
                     }
                 }
 
@@ -135,7 +138,6 @@ class UpLoadSongFragment : Fragment {
     private fun getValues() {
         nameSong = binding.tvNameSongUpLoad.text.toString()
         binding.apply {
-            val arrayList = ArrayList<Int>()
             if (ckbBeat.isChecked) {
                 listStyles.add(Constants.STYLE_BEAT)
             }

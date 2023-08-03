@@ -11,6 +11,7 @@ import com.google.firebase.ktx.Firebase
 class RepositoryUser {
     private var fireStore: FirebaseFirestore? = null
     private var userCurrentLiveData = MutableLiveData<ArrayList<User>>()
+    var userSingerLiveData = MutableLiveData<ArrayList<User>>()
     fun getUserCurrentLiveData(): MutableLiveData<ArrayList<User>>? {
         return userCurrentLiveData
     }
@@ -146,6 +147,30 @@ class RepositoryUser {
                 Log.d("account : ", "Not found any user")
                 userCurrentLiveData?.value = ArrayList()
             }
+    }
+
+    fun getAllSinger() {
+        var listUser = ArrayList<User>()
+        fireStore!!.collection("User").whereGreaterThan("singerId", 0L).get().addOnSuccessListener {
+            if (!it.isEmpty) {
+                for (item in it) {
+                    val userName = item.getString("userName").toString()
+                    val password = item.getString("passWord").toString()
+                    val email = item.getString("email").toString()
+                    val userId = item.getLong("userId") as Long
+                    val fileImage = item.getString("fileImage").toString()
+                    val singerName = item.getString("singerName").toString()
+                    val singerId = item.getLong("singerId") as Long
+                    var mUser = User(userName, password, email, userId, fileImage, singerName, singerId)
+                    listUser.add(mUser)
+                }
+                userSingerLiveData?.value = listUser
+                Log.d("GetUser:","get singer successfully, number singer:${listUser.size}")
+            }
+        }.addOnFailureListener {
+            userSingerLiveData.value=ArrayList()
+            Log.d("GetUser:","get singer failed")
+        }
     }
 
     fun checkLogged(context: Context): Long {
