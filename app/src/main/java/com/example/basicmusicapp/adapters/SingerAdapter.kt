@@ -3,8 +3,10 @@ package com.example.basicmusicapp.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.basicmusicapp.R
 import com.example.basicmusicapp.databinding.ItemSingerBinding
 import com.example.basicmusicapp.databinding.LayoutItemSongBinding
+import com.example.basicmusicapp.models.Song
 import com.example.basicmusicapp.models.SongMusic
 import com.example.basicmusicapp.models.User
 import com.squareup.picasso.Picasso
@@ -33,7 +35,11 @@ class SingerAdapter(var listSinger: ArrayList<User>, var onclickListener: Onclic
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val user = listSinger[position]
-        Picasso.get().load(user.fileImage).into(holder.imageSinger)
+        if(user.fileImage!=""){
+            Picasso.get().load(user.fileImage).into(holder.imageSinger)
+        }else{
+            holder.imageSinger.setImageResource(R.drawable.music_player )
+        }
         holder.textViewSinger.text = user.singerName
         holder.item.setOnClickListener {
             onclickListener.onClickListSong(user.singerId, user.singerName)
@@ -42,5 +48,9 @@ class SingerAdapter(var listSinger: ArrayList<User>, var onclickListener: Onclic
 
     override fun getItemCount(): Int {
         return listSinger.size
+    }
+    fun setFilter(mListSinger: ArrayList<User>) {
+        this.listSinger = mListSinger
+        notifyDataSetChanged()
     }
 }

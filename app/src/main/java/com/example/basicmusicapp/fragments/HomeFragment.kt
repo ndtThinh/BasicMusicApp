@@ -1,13 +1,14 @@
 package com.example.basicmusicapp.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import android.widget.Toast
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,6 +16,8 @@ import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
 import com.example.basicmusicapp.Constants
+import com.example.basicmusicapp.MainActivity
+import com.example.basicmusicapp.PlayingSongActivity
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.adapters.SlideAdapter
 import com.example.basicmusicapp.adapters.SongMusicAdapter
@@ -22,6 +25,9 @@ import com.example.basicmusicapp.databinding.FragmentHomeBinding
 import com.example.basicmusicapp.models.SlideItem
 import com.example.basicmusicapp.models.SongMusic
 import com.example.basicmusicapp.viewmodels.ViewModelHomeFragment
+import java.text.Normalizer
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.abs
 
 // TODO: Rename parameter arguments, choose names that match
@@ -46,6 +52,8 @@ class HomeFragment : Fragment() {
 
     var handler = Handler()
     private var slideItems = ArrayList<SlideItem>()
+    private var mListSong = ArrayList<SongMusic>()
+    private lateinit var searchAdapter: SongMusicAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,221 +69,255 @@ class HomeFragment : Fragment() {
         viewModelHomeFragment.loadSong()
         slideViewFun()
         initFragment()
+        binding.searchBoxNameSong.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+//                var newListSong=ArrayList<SongMusic>()
+//                binding.rcvSongSearch.visibility=View.VISIBLE
+//                binding.rcvSongSearch.setHasFixedSize(true)
+//                binding.rcvSongSearch.layoutManager=LinearLayoutManager(context)
+//                searchAdapter= SongMusicAdapter(newListSong,object :SongMusicAdapter.OnclickListener{
+//                    override fun onClickToPlaySong(song: SongMusic, index: Int) {
+//
+//                    }
+//
+//                    override fun onClickToMoreAction(song: SongMusic, index: Int) {
+//
+//                    }
+//
+//                })
+//                binding.rcvSongSearch.adapter=searchAdapter
+//                for (item in mListSong) {
+//                    var removeDiaLowerStr =
+//                        removeVietnameseDiacritics(item.nameSong).toLowerCase(Locale.ROOT)
+//                    if (removeDiaLowerStr.contains(newText!!))
+//                        newListSong.add(item)
+//                }
+//                searchAdapter.setFilter(newListSong)
+                return true
+            }
+        })
 
         return binding.root
     }
 
+    fun removeVietnameseDiacritics(input: String): String {
+        val temp = Normalizer.normalize(input, Normalizer.Form.NFD)
+        return temp.replace("\\p{M}".toRegex(), "")
+    }
+
     private fun initFragment() {
+        actionViewBegin()
         viewModelHomeFragment.liveDataSongLove.observe(viewLifecycleOwner) { t ->
-                if (t!!.isNotEmpty()) {
-                    //love song
-                    binding.rcvRomanceSong.setHasFixedSize(true)
-                    binding.rcvRomanceSong.layoutManager = LinearLayoutManager(context)
-                    romanceSongAdapter = SongMusicAdapter(t,
-                        object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
-
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvRomanceSong.adapter = romanceSongAdapter
-
-                }
-            }
-        viewModelHomeFragment.liveDataSongSad
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //sad song
-                    binding.rcvSadSong.setHasFixedSize(true)
-                    binding.rcvSadSong.layoutManager = LinearLayoutManager(context)
-                    sadSongAdapter =
-                        SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
-
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvSadSong.adapter = sadSongAdapter
-                }
-            }
-        viewModelHomeFragment.liveDataSongChina
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //china song
-                    binding.rcvChinaSong.setHasFixedSize(true)
-                    binding.rcvChinaSong.layoutManager = LinearLayoutManager(context)
-                    chinaSongAdapter =
-                        SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
-
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvChinaSong.adapter = chinaSongAdapter
-                }
-            }
-        viewModelHomeFragment.liveDataSongChill
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //chill song
-                    binding.rcvChillSong.setHasFixedSize(true)
-                    binding.rcvChillSong.layoutManager = LinearLayoutManager(context)
-                    chillSongAdapter =
-                        SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
-
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvChillSong.adapter = chillSongAdapter
-                }
-            }
-        viewModelHomeFragment.liveDataSongBeat
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //beat song
-                    binding.rcvBeatSong.setHasFixedSize(true)
-                    binding.rcvBeatSong.layoutManager = LinearLayoutManager(context)
-                    beatSongAdapter =
-                        SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
-
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvBeatSong.adapter = beatSongAdapter
-                }
-            }
-        viewModelHomeFragment.liveDataSongRemix
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //remix song
-                    binding.rcvRemixSong.setHasFixedSize(true)
-                    binding.rcvRemixSong.layoutManager = LinearLayoutManager(context)
-                    remixSongAdapter =
-                        SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
-
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvRemixSong.adapter = remixSongAdapter
-                }
-            }
-
-        viewModelHomeFragment.liveDataSongFun
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //fun song
-                    binding.rcvFunSong.setHasFixedSize(true)
-                    binding.rcvFunSong.layoutManager = LinearLayoutManager(context)
-                    funSongAdapter = SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+            if (t!!.isNotEmpty()) {
+                //love song
+                mListSong = t
+                binding.rcvRomanceSong.setHasFixedSize(true)
+                binding.rcvRomanceSong.layoutManager = LinearLayoutManager(context)
+                romanceSongAdapter = SongMusicAdapter(t,
+                    object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_LOVE)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
                         }
                     })
-                    binding.rcvFunSong.adapter = funSongAdapter
-                }
+                binding.rcvRomanceSong.adapter = romanceSongAdapter
+                actionViewEnd()
             }
+        }
+        viewModelHomeFragment.liveDataSongSad.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //sad song
+                binding.rcvSadSong.setHasFixedSize(true)
+                binding.rcvSadSong.layoutManager = LinearLayoutManager(context)
+                sadSongAdapter =
+                    SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                        override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_SAD)
+                        }
 
-        viewModelHomeFragment.liveDataSongEuro
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //Euro song
-                    binding.rcvEuroSong.setHasFixedSize(true)
-                    binding.rcvEuroSong.layoutManager = LinearLayoutManager(context)
-                    euroSongAdapter =
-                        SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
-
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvEuroSong.adapter = euroSongAdapter
-                }
+                        override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                binding.rcvSadSong.adapter = sadSongAdapter
             }
-        viewModelHomeFragment.liveDataSongRedMusic
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //Euro song
-                    binding.rcvRedMusicSong.setHasFixedSize(true)
-                    binding.rcvRedMusicSong.layoutManager = LinearLayoutManager(context)
-                    redMusicSongAdapter =
-                        SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
+        }
+        viewModelHomeFragment.liveDataSongChina.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //china song
+                binding.rcvChinaSong.setHasFixedSize(true)
+                binding.rcvChinaSong.layoutManager = LinearLayoutManager(context)
+                chinaSongAdapter =
+                    SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                        override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_CHINA)
+                        }
 
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvRedMusicSong.adapter = redMusicSongAdapter
-                }
+                        override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                binding.rcvChinaSong.adapter = chinaSongAdapter
             }
+        }
+        viewModelHomeFragment.liveDataSongChill.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //chill song
+                binding.rcvChillSong.setHasFixedSize(true)
+                binding.rcvChillSong.layoutManager = LinearLayoutManager(context)
+                chillSongAdapter =
+                    SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                        override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_LOFI)
+                        }
 
-        viewModelHomeFragment.liveDataSongRap
-            .observe(
-                viewLifecycleOwner
-            ) { t ->
-                if (t!!.isNotEmpty()) {
-                    //Euro song
-                    binding.rcvRapSong.setHasFixedSize(true)
-                    binding.rcvRapSong.layoutManager = LinearLayoutManager(context)
-                    rapSongAdapter =
-                        SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
-                            override fun onClickToPlaySong(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            }
-
-                            override fun onClickToMoreAction(song: SongMusic, index: Int) {
-                                Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
-                            }
-                        })
-                    binding.rcvRapSong.adapter = rapSongAdapter
-                }
+                        override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                binding.rcvChillSong.adapter = chillSongAdapter
             }
+        }
+        viewModelHomeFragment.liveDataSongBeat.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //beat song
+                binding.rcvBeatSong.setHasFixedSize(true)
+                binding.rcvBeatSong.layoutManager = LinearLayoutManager(context)
+                beatSongAdapter =
+                    SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                        override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_BEAT)
+                        }
+
+                        override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                binding.rcvBeatSong.adapter = beatSongAdapter
+            }
+        }
+        viewModelHomeFragment.liveDataSongRemix.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //remix song
+                binding.rcvRemixSong.setHasFixedSize(true)
+                binding.rcvRemixSong.layoutManager = LinearLayoutManager(context)
+                remixSongAdapter =
+                    SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                        override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_REMIX)
+                        }
+
+                        override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                binding.rcvRemixSong.adapter = remixSongAdapter
+            }
+        }
+        viewModelHomeFragment.liveDataSongFun.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //fun song
+                binding.rcvFunSong.setHasFixedSize(true)
+                binding.rcvFunSong.layoutManager = LinearLayoutManager(context)
+                funSongAdapter = SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                    override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                        Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                        sendData(song, index, t, Constants.STYLE_FUN)
+                    }
+
+                    override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                        Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                    }
+                })
+                binding.rcvFunSong.adapter = funSongAdapter
+            }
+        }
+        viewModelHomeFragment.liveDataSongEuro.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //Euro song
+                binding.rcvEuroSong.setHasFixedSize(true)
+                binding.rcvEuroSong.layoutManager = LinearLayoutManager(context)
+                euroSongAdapter =
+                    SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                        override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_EURO)
+                        }
+
+                        override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                binding.rcvEuroSong.adapter = euroSongAdapter
+            }
+        }
+        viewModelHomeFragment.liveDataSongRedMusic.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //Euro song
+                binding.rcvRedMusicSong.setHasFixedSize(true)
+                binding.rcvRedMusicSong.layoutManager = LinearLayoutManager(context)
+                redMusicSongAdapter =
+                    SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                        override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_RED)
+                        }
+
+                        override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                binding.rcvRedMusicSong.adapter = redMusicSongAdapter
+            }
+        }
+        viewModelHomeFragment.liveDataSongRap.observe(viewLifecycleOwner) { t ->
+            if (t!!.isNotEmpty()) {
+                //Euro song
+                binding.rcvRapSong.setHasFixedSize(true)
+                binding.rcvRapSong.layoutManager = LinearLayoutManager(context)
+                rapSongAdapter =
+                    SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
+                        override fun onClickToPlaySong(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
+                            sendData(song, index, t, Constants.STYLE_RAP)
+                        }
+
+                        override fun onClickToMoreAction(song: SongMusic, index: Int) {
+                            Toast.makeText(context, "click to action", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                binding.rcvRapSong.adapter = rapSongAdapter
+            }
+        }
+
+    }
+
+    private fun sendData(
+        songMusic: SongMusic,
+        index: Int,
+        listSongMusic: ArrayList<SongMusic>,
+        style: Int
+    ) {
+        val intent = Intent(activity, PlayingSongActivity::class.java)
+        val bundle = Bundle()
+        bundle.putSerializable("song", songMusic)
+        bundle.putInt("style", style)
+        intent.putExtra("listSong", listSongMusic)
+        intent.putExtras(bundle)
+        startActivity(intent)
     }
 
     private fun slideViewFun() {
@@ -311,4 +353,13 @@ class HomeFragment : Fragment() {
     private var sliderRunnable =
         Runnable { binding.viewPager2.currentItem = binding.viewPager2.currentItem + 1 }
 
+    private fun actionViewBegin() {
+        binding.progressBarHomeFragment.visibility = View.VISIBLE
+        binding.layoutHomeFragmentContent.alpha = 0.5f
+    }
+
+    private fun actionViewEnd() {
+        binding.progressBarHomeFragment.visibility = View.GONE
+        binding.layoutHomeFragmentContent.alpha = 1f
+    }
 }

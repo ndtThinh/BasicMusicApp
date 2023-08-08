@@ -12,6 +12,7 @@ class RepositoryUser {
     private var fireStore: FirebaseFirestore? = null
     private var userCurrentLiveData = MutableLiveData<ArrayList<User>>()
     var userSingerLiveData = MutableLiveData<ArrayList<User>>()
+    var singerCurrentLiveData = MutableLiveData<User>()
     fun getUserCurrentLiveData(): MutableLiveData<ArrayList<User>>? {
         return userCurrentLiveData
     }
@@ -149,6 +150,30 @@ class RepositoryUser {
             }
     }
 
+    fun getSingerCurrent(singerId: Long) {
+        fireStore!!.collection("User").whereEqualTo("singerId", singerId).get()
+            .addOnSuccessListener {
+                if (!it.isEmpty) {
+                    for (item in it) {
+                        val userName = item.getString("userName").toString()
+                        val password = item.getString("passWord").toString()
+                        val email = item.getString("email").toString()
+                        val userId = item.getLong("userId") as Long
+                        val fileImage = item.getString("fileImage").toString()
+                        val singerName = item.getString("singerName").toString()
+                        val singerId = item.getLong("singerId") as Long
+                        var userCurrent =
+                            User(userName, password, email, userId, fileImage, singerName, singerId)
+                        singerCurrentLiveData.value = userCurrent
+                        Log.d("Account", "User Repository: $userName$userId")
+                    }
+                }
+            }.addOnFailureListener {
+                singerCurrentLiveData.value = null
+                Log.d("account : ", "Not found any user")
+            }
+    }
+
     fun getAllSinger() {
         var listUser = ArrayList<User>()
         fireStore!!.collection("User").whereGreaterThan("singerId", 0L).get().addOnSuccessListener {
@@ -161,22 +186,19 @@ class RepositoryUser {
                     val fileImage = item.getString("fileImage").toString()
                     val singerName = item.getString("singerName").toString()
                     val singerId = item.getLong("singerId") as Long
-                    var mUser = User(userName, password, email, userId, fileImage, singerName, singerId)
+                    var mUser =
+                        User(userName, password, email, userId, fileImage, singerName, singerId)
                     listUser.add(mUser)
                 }
                 userSingerLiveData?.value = listUser
-                Log.d("GetUser:","get singer successfully, number singer:${listUser.size}")
+                Log.d("GetUser:", "get singer successfully, number singer:${listUser.size}")
             }
         }.addOnFailureListener {
-            userSingerLiveData.value=ArrayList()
-            Log.d("GetUser:","get singer failed")
+            userSingerLiveData.value = ArrayList()
+            Log.d("GetUser:", "get singer failed")
         }
     }
 
-    fun checkLogged(context: Context): Long {
-        val sharedPreferences = context.getSharedPreferences("Login", Context.MODE_PRIVATE)
-        return sharedPreferences.getLong("userId", -1)
-    }
 
     fun updateUser(user: User, onUpdateUserListener: OnUpdateUserListener) {
         val dataUpdate = hashMapOf(
@@ -184,7 +206,7 @@ class RepositoryUser {
             "passWord" to user.passWord,
             "email" to user.email,
             "userId" to user.userId,
-            "fileImage" to user.userName,
+            "fileImage" to user.fileImage,
             "singerName" to user.singerName,
             "singerId" to user.singerId
         )
@@ -197,6 +219,11 @@ class RepositoryUser {
                 onUpdateUserListener.onUpdateUser(false)
                 Log.d("Update", "update image failed")
             }
+    }
+
+    fun checkLogged(context: Context): Long {
+        val sharedPreferences = context.getSharedPreferences("Login", Context.MODE_PRIVATE)
+        return sharedPreferences.getLong("userId", -1)
     }
 
     fun keepLoginInUser(userId: Long, context: Context) {

@@ -12,7 +12,6 @@ import java.io.File
 
 class RepositoryImage {
     private var storeReference: StorageReference? = null
-    var liveDataUrlStr = MutableLiveData<String>()
     var bitmap: Bitmap? = null
     var urlImage: String = ""
 
@@ -53,18 +52,6 @@ class RepositoryImage {
         }
     }
 
-    fun readImage(imageName: String, onGetImageListener: OnGetImageListener) {
-        val file: File = File.createTempFile("image", ".jpeg")
-        storeReference!!.child("images/$imageName").getFile(file)
-            .addOnSuccessListener {
-                bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                onGetImageListener.onGetImage(true)
-                Log.d("ReadUser", "get image successfully")
-            }.addOnFailureListener {
-                Log.d("ReadUser", "get image failed")
-                onGetImageListener.onGetImage(false)
-            }
-    }
 
     fun getUrlImage(imageName: String, onGetImageListener: OnGetImageListener) {
         storeReference!!.child("images/$imageName").downloadUrl.addOnSuccessListener {
@@ -73,22 +60,8 @@ class RepositoryImage {
             Log.d("Get Url:", "Get Image URL successfully")
         }.addOnFailureListener {
             onGetImageListener.onGetImage(false)
-            Log.d("Get Url:", "Get Image URL successfully")
+            Log.d("Get Url:", "Get Image URL failed")
         }
     }
 
-    fun getListImage() {
-        storeReference!!.child("images/").listAll().addOnSuccessListener {
-            var imageUrl = mutableListOf<String>()
-            var imageName = mutableListOf<String>()
-            for (item in it.items) {
-                imageName.add(item.name)
-                item.downloadUrl.addOnSuccessListener {
-                    imageUrl.add(it.toString())
-                }
-            }
-        }.addOnFailureListener {
-
-        }
-    }
 }

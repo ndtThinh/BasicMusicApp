@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.example.basicmusicapp.databinding.LayoutItemSongBinding
 import com.example.basicmusicapp.models.Song
 import com.example.basicmusicapp.models.SongMusic
+import com.example.basicmusicapp.models.User
 import com.squareup.picasso.Picasso
 
 class SongMusicAdapter(
@@ -55,6 +56,10 @@ class SongMusicAdapter(
 
     override fun getItemCount(): Int {
         return listSong.size
+    }
+    fun setFilter(mListSong: ArrayList<SongMusic>) {
+        this.listSong = mListSong
+        notifyDataSetChanged()
     }
 }
 

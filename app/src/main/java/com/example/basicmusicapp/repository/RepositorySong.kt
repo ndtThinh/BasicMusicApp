@@ -10,6 +10,7 @@ import com.google.firebase.ktx.Firebase
 
 class RepositorySong {
     private var fireStore: FirebaseFirestore? = null
+    var liveDataSongOfSinger = MutableLiveData<ArrayList<SongMusic>>()
     var liveDataSongLove = MutableLiveData<ArrayList<SongMusic>>()
     var liveDataSongSad = MutableLiveData<ArrayList<SongMusic>>()
     var liveDataSongChina = MutableLiveData<ArrayList<SongMusic>>()
@@ -121,8 +122,8 @@ class RepositorySong {
                         songId, nameSong, singerName, singerId, styles, imageSong, fileSong
                     )
                     Log.d("Get Data Song: ", "${songMusic.nameSong}" + " ${songMusic.styles}")
-                    for(i in 0 until songMusic.styles.size){
-                        when(songMusic.styles[i]){
+                    for (i in 0 until songMusic.styles.size) {
+                        when (songMusic.styles[i]) {
                             Constants.STYLE_LOVE -> songLove.add(songMusic)
                             Constants.STYLE_SAD -> songSad.add(songMusic)
                             Constants.STYLE_CHINA -> songChina.add(songMusic)
@@ -145,5 +146,33 @@ class RepositorySong {
         }.addOnFailureListener {
             Log.d("GetData Repository song", "Not found any song")
         }
+    }
+
+    fun getSongBySinger(singerId: Long) {
+        fireStore!!.collection("Song").whereEqualTo("singerId", singerId).get()
+            .addOnSuccessListener {
+                if (!it.isEmpty) {
+                    var listSongSinger = ArrayList<SongMusic>()
+                    for (item in it) {
+                        val nameSong = item.getString("nameSong").toString()
+                        val songId: Long = item.getLong("songId").toString().toLong()
+                        val singerId: Long = item.getLong("singerId").toString().toLong()
+                        val imageSong = item.getString("imageSong").toString()
+                        val fileSong = item.getString("fileSong").toString()
+                        val singerName = item.getString("nameSinger").toString()
+                        val styles: List<Int> = item.get("styles") as List<Int>
+                        val songMusic = SongMusic(
+                            songId, nameSong, singerName, singerId, styles, imageSong, fileSong
+                        )
+                        Log.d("Get Data Song: ", "${songMusic.nameSong}" + " ${songMusic.styles}")
+                        listSongSinger.add(songMusic)
+                        Log.d("GetData song:", " ${listSongSinger.size}")
+                    }
+                    liveDataSongOfSinger.value = listSongSinger
+                }
+            }.addOnFailureListener {
+                liveDataSongOfSinger.value=ArrayList()
+                Log.d("GetData Repository song", "Not found any song of singer")
+            }
     }
 }
