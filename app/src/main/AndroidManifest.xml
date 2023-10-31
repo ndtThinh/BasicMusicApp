@@ -46,6 +46,7 @@
         </activity>
 
         <service android:name=".service.MusicService" />
+        <service android:name=".service.SongService" />
 
         <receiver android:name=".broadcastreceiver.MyReceiver" />
     </application>

@@ -99,11 +99,11 @@ class AlbumSingerFragment : Fragment() {
     }
     private fun actionViewBegin() {
         binding.progressBarAlbumFragment.visibility = View.VISIBLE
-        binding.layoutAlbumFragment.alpha = 0.5f
+        binding.layoutAlbumFragment.visibility=View.GONE
     }
 
     private fun actionViewEnd() {
         binding.progressBarAlbumFragment.visibility = View.GONE
-        binding.layoutAlbumFragment.alpha = 1f
+        binding.layoutAlbumFragment.visibility=View.VISIBLE
     }
 }

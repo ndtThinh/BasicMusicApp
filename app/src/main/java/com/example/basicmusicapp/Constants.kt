@@ -19,5 +19,7 @@ object Constants {
     const val STYLE_LOFI = 8
     const val STYLE_EURO = 9
     const val STYLE_FUN = 10
+    const val SONG_PLAYING="isPlaying"
+    const val NEW_SONG_PLAY="newSongPlay"
 
 }

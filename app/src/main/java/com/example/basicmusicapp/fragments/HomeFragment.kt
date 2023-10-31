@@ -121,7 +121,7 @@ class HomeFragment : Fragment() {
                     object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_LOVE)
+                            sendData(song, index, t, Constants.STYLE_LOVE,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -141,7 +141,7 @@ class HomeFragment : Fragment() {
                     SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_SAD)
+                            sendData(song, index, t, Constants.STYLE_SAD,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -160,7 +160,7 @@ class HomeFragment : Fragment() {
                     SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_CHINA)
+                            sendData(song, index, t, Constants.STYLE_CHINA,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -179,7 +179,7 @@ class HomeFragment : Fragment() {
                     SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_LOFI)
+                            sendData(song, index, t, Constants.STYLE_LOFI,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -198,7 +198,7 @@ class HomeFragment : Fragment() {
                     SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_BEAT)
+                            sendData(song, index, t, Constants.STYLE_BEAT,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -217,7 +217,7 @@ class HomeFragment : Fragment() {
                     SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_REMIX)
+                            sendData(song, index, t, Constants.STYLE_REMIX,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -235,7 +235,7 @@ class HomeFragment : Fragment() {
                 funSongAdapter = SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                     override fun onClickToPlaySong(song: SongMusic, index: Int) {
                         Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                        sendData(song, index, t, Constants.STYLE_FUN)
+                        sendData(song, index, t, Constants.STYLE_FUN,Constants.NEW_SONG_PLAY)
                     }
 
                     override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -254,7 +254,7 @@ class HomeFragment : Fragment() {
                     SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_EURO)
+                            sendData(song, index, t, Constants.STYLE_EURO,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -273,7 +273,7 @@ class HomeFragment : Fragment() {
                     SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_RED)
+                            sendData(song, index, t, Constants.STYLE_RED,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -292,7 +292,7 @@ class HomeFragment : Fragment() {
                     SongMusicAdapter(t, object : SongMusicAdapter.OnclickListener {
                         override fun onClickToPlaySong(song: SongMusic, index: Int) {
                             Toast.makeText(context, "click to song", Toast.LENGTH_LONG).show()
-                            sendData(song, index, t, Constants.STYLE_RAP)
+                            sendData(song, index, t, Constants.STYLE_RAP,Constants.NEW_SONG_PLAY)
                         }
 
                         override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -302,19 +302,21 @@ class HomeFragment : Fragment() {
                 binding.rcvRapSong.adapter = rapSongAdapter
             }
         }
-
     }
 
     private fun sendData(
         songMusic: SongMusic,
         index: Int,
         listSongMusic: ArrayList<SongMusic>,
-        style: Int
+        style: Int,
+        kind:String
     ) {
         val intent = Intent(activity, PlayingSongActivity::class.java)
         val bundle = Bundle()
         bundle.putSerializable("song", songMusic)
         bundle.putInt("style", style)
+        bundle.putInt("index",index)
+        bundle.putString("kind",kind)
         intent.putExtra("listSong", listSongMusic)
         intent.putExtras(bundle)
         startActivity(intent)
@@ -355,11 +357,11 @@ class HomeFragment : Fragment() {
 
     private fun actionViewBegin() {
         binding.progressBarHomeFragment.visibility = View.VISIBLE
-        binding.layoutHomeFragmentContent.alpha = 0.5f
+        binding.layoutHomeFragmentContent.visibility=View.GONE
     }
 
     private fun actionViewEnd() {
         binding.progressBarHomeFragment.visibility = View.GONE
-        binding.layoutHomeFragmentContent.alpha = 1f
+        binding.layoutHomeFragmentContent.visibility=View.VISIBLE
     }
 }

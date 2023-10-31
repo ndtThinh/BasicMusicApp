@@ -1,5 +1,6 @@
 package com.example.basicmusicapp.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -7,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.basicmusicapp.Constants
+import com.example.basicmusicapp.PlayingSongActivity
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.adapters.SongMusicAdapter
 import com.example.basicmusicapp.databinding.FragmentListSongOfSingerlBinding
@@ -50,7 +53,7 @@ class ListSongOfSingerFragment(singerId: Long, nameSinger: String) : Fragment() 
                 binding.rcvSongOfSinger.layoutManager = LinearLayoutManager(context)
                 songMusicAdapter = SongMusicAdapter(it, object : SongMusicAdapter.OnclickListener {
                     override fun onClickToPlaySong(song: SongMusic, index: Int) {
-
+                        sendData(song,index,it,Constants.STYLE_LOFI)
                     }
 
                     override fun onClickToMoreAction(song: SongMusic, index: Int) {
@@ -68,6 +71,21 @@ class ListSongOfSingerFragment(singerId: Long, nameSinger: String) : Fragment() 
         }
     }
 
+    private fun sendData(
+        songMusic: SongMusic,
+        index: Int,
+        listSongMusic: ArrayList<SongMusic>,
+        style: Int
+    ) {
+        val intent = Intent(activity, PlayingSongActivity::class.java)
+        val bundle = Bundle()
+        bundle.putSerializable("song", songMusic)
+        bundle.putInt("style", style)
+        bundle.putInt("index",index)
+        intent.putExtra("listSong", listSongMusic)
+        intent.putExtras(bundle)
+        startActivity(intent)
+    }
     private fun actionViewBegin() {
         binding.progressBarListSongOfSingerFragment.visibility = View.VISIBLE
         binding.layoutListSongOfSingerFragment.alpha = 0.5f

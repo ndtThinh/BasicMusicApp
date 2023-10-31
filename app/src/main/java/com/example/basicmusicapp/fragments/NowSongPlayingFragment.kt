@@ -1,9 +1,6 @@
 package com.example.basicmusicapp.fragments
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,19 +8,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.basicmusicapp.Constants
+import com.example.basicmusicapp.PlayingSongActivity
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.broadcastreceiver.MyReceiver
 import com.example.basicmusicapp.databinding.FragmentNowSongPlayingBinding
-import com.example.basicmusicapp.models.Song
-import com.example.basicmusicapp.repository.DataSongs
+import com.example.basicmusicapp.models.SongMusic
+import com.example.basicmusicapp.viewmodels.ViewModelNowSongPlaying
+import com.squareup.picasso.Picasso
 
 // TODO: Rename parameter arguments, choose names that match
 class NowSongPlayingFragment : Fragment() {
 
-    var song: Song? = null
+    var currentSong: SongMusic? = null
     var index: Int = 0
+    var listSongCurrent = ArrayList<SongMusic>()
+    private lateinit var viewModelNowSongPlayingFragment: ViewModelNowSongPlaying
     private lateinit var binding: FragmentNowSongPlayingBinding
     private val actionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -34,11 +36,12 @@ class NowSongPlayingFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Log.d("fragmentNowSongPlaying", "on create")
     }
 
     override fun onStart() {
         super.onStart()
+        Log.d("fragmentNowSongPlaying", "on start")
         val filter = IntentFilter("action_music")
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(actionReceiver, filter)
     }
@@ -48,6 +51,7 @@ class NowSongPlayingFragment : Fragment() {
         initFragment()
     }
 
+
     override fun onDestroyView() {
         super.onDestroyView()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(actionReceiver)
@@ -56,9 +60,10 @@ class NowSongPlayingFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentNowSongPlayingBinding.inflate(inflater, container, false)
         val view = binding.root
+        viewModelNowSongPlayingFragment=ViewModelProvider(requireActivity())[ViewModelNowSongPlaying::class.java]
         binding.apply {
             btnPausePlayNotificationPlaying.setOnClickListener {
                 pausePlaySong()
@@ -78,49 +83,43 @@ class NowSongPlayingFragment : Fragment() {
                 startMyReceiver(Constants.ACTION_CLEAR)
             }
             imgSongPlaying.setOnClickListener {
-                changeToPlaySongFragment()
+                changeToPlayingActivity()
             }
-            tvTitleSongPlaying.setOnClickListener {
-                changeToPlaySongFragment()
+            linearLayout.setOnClickListener {
+                changeToPlayingActivity()
             }
+        }
+        viewModelNowSongPlayingFragment.loadSong()
+        viewModelNowSongPlayingFragment.liveDataSong.observe(viewLifecycleOwner){
+            currentSong=it
+            setUiSong()
         }
         return view
     }
 
-    private fun changeToPlaySongFragment() {
-        val fragmentPlaySongFragment: PlaySongFragment = PlaySongFragment()
-        var fragmentManager = parentFragmentManager
-        var fragmentTransaction = fragmentManager.beginTransaction()
+    private fun changeToPlayingActivity() {
+        val intent = Intent(activity, PlayingSongActivity::class.java)
         val bundle = Bundle()
-        bundle.putSerializable("song", song)
+        bundle.putSerializable("song", currentSong)
+        bundle.putInt("style", 0)
         bundle.putInt("index", index)
-        fragmentPlaySongFragment.arguments = bundle
-        fragmentTransaction.replace(R.id.frameLayout, fragmentPlaySongFragment)
-        fragmentTransaction.addToBackStack("ok")
-        fragmentTransaction.commit()
-        val view =
-            requireActivity().findViewById<FrameLayout>(R.id.frameLayout_song_playing)
-        view.visibility = View.GONE
+        bundle.putString("kind", Constants.SONG_PLAYING)
+        intent.putExtra("listSong", listSongCurrent)
+        intent.putExtras(bundle)
+        startActivity(intent)
     }
 
     private fun initFragment() {
-        if (PlaySongFragment.musicService!!.isPlaying()) {
-//            val currentSong= PlaySongFragment.musicService!!.currentSong
-            val bundle = arguments
-            if (bundle != null) {
-                song = bundle.getSerializable("songNow") as Song
-                index = bundle.getInt("index")
-                binding.apply {
-//                    if (currentSong != null) {
-//                        imgSongPlaying.setImageResource(currentSong.image)
-//                        tvSingerNamePlaying.text = currentSong!!.singer
-//                        tvTitleSongPlaying.text = currentSong!!.title
-//                    }
-                    imgSongPlaying.setImageResource(song!!.image)
-                    tvSingerNamePlaying.text = song!!.singer
-                    tvTitleSongPlaying.text = song!!.title
-
-                }
+        val bundle = arguments
+        if (bundle != null) {
+            currentSong = bundle.getSerializable("songNow") as SongMusic
+            index = bundle.getInt("index")
+            listSongCurrent = bundle.getSerializable("listSong") as ArrayList<SongMusic>
+            Log.d("ListSongCurrent:", "size:${listSongCurrent.size}")
+            binding.apply {
+                Picasso.get().load(currentSong!!.imageSong).into(imgSongPlaying)
+                tvSingerNamePlaying.text = currentSong!!.nameSinger
+                tvTitleSongPlaying.text = currentSong!!.nameSong
             }
         }
     }
@@ -130,15 +129,11 @@ class NowSongPlayingFragment : Fragment() {
             Constants.ACTION_PAUSE -> {
                 // Xử lý action PAUSE
                 Log.d("Action Music", "pause")
-//                musicService!!.pause()
-                Log.d("Action Music", PlaySongFragment.musicService!!.isPlaying().toString())
                 binding.btnPausePlayNotificationPlaying.setImageResource(R.drawable.play_icon)
             }
             Constants.ACTION_RESUME -> {
                 // Xử lý action RESUME
                 Log.d("Action Music", "play")
-//                musicService!!.play()
-                Log.d("Action Music", PlaySongFragment.musicService!!.isPlaying().toString())
                 binding.btnPausePlayNotificationPlaying.setImageResource(R.drawable.pause_icon)
             }
             Constants.ACTION_CLEAR -> {
@@ -150,22 +145,20 @@ class NowSongPlayingFragment : Fragment() {
             Constants.ACTION_NEXT -> {
                 //Xử lý action NEXT
                 nextSong()
-                Log.d("FragmentPlay", "Next SOng")
+                Log.d("FragmentPlaying", "Next SOng")
             }
             Constants.ACTION_PREV -> {
                 //Xử lý action PREVIOUS
                 previousSong()
-                Log.d("FragmentPlay", "Prev SOng")
+                Log.d("FragmentPlaying", "Prev SOng")
             }
         }
     }
 
     private fun pausePlaySong() {
-        if (PlaySongFragment.musicService!!.isPlaying()) {
-            binding.btnPausePlayNotificationPlaying.setImageResource(R.drawable.play_icon)
+        if (PlayingSongActivity.songService!!.isPlaying()) {
             startMyReceiver(Constants.ACTION_PAUSE)
         } else {
-            binding.btnPausePlayNotificationPlaying.setImageResource(R.drawable.pause_icon)
             startMyReceiver(Constants.ACTION_RESUME)
         }
     }
@@ -181,40 +174,32 @@ class NowSongPlayingFragment : Fragment() {
 
 
     private fun nextSong() {
-        if (index != null) {
-            if (index == DataSongs().listSongs.size - 1) {
-                index = 0
-            } else {
-                index++
-            }
-            setInitNextPrevSong()
+        index++
+        if (index == listSongCurrent.size) {
+            index = 0
         }
-    }
-
-    private fun previousSong() {
-        if (index != null) {
-            if (index == 0) {
-                index = DataSongs().listSongs.size - 1
-            } else {
-                index--
-            }
-            setInitNextPrevSong()
-        }
-    }
-
-    private fun setInitNextPrevSong() {
-        song = DataSongs().listSongs[index]
-//        song= PlaySongFragment.musicService?.currentSong
+        currentSong = listSongCurrent[index]
         setUiSong()
     }
 
+    private fun previousSong() {
+        index--
+        if (index == -1) {
+            index = listSongCurrent.size - 1
+        }
+        currentSong = listSongCurrent[index]
+        setUiSong()
+    }
+
+
     private fun setUiSong() {
         binding.apply {
-            tvTitleSongPlaying.text = song!!.title
-            tvSingerNamePlaying.text = song!!.singer
-            imgSongPlaying.setImageResource(song!!.image)
+            tvTitleSongPlaying.text = currentSong!!.nameSong
+            tvSingerNamePlaying.text = currentSong!!.nameSinger
+            Picasso.get().load(currentSong!!.imageSong).into(imgSongPlaying)
             btnPausePlayNotificationPlaying.setImageResource(R.drawable.pause_icon)
         }
     }
+
 
 }

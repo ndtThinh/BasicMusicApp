@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.Splash
 import com.example.basicmusicapp.databinding.FragmentAccountBinding
-import com.example.basicmusicapp.repository.RepositoryImage
 import com.example.basicmusicapp.repository.RepositoryUser
 import com.example.basicmusicapp.viewmodels.ViewModelAccountFragment
 import com.squareup.picasso.Picasso
@@ -54,6 +53,7 @@ class AccountFragment : Fragment {
                     requireContext().applicationContext,
                     Splash::class.java
                 )
+                requireActivity().finish()
                 startActivity(intent)
             }
             btnSettingAccount.setOnClickListener {
@@ -72,6 +72,7 @@ class AccountFragment : Fragment {
                 }
             }
         }
+
         return view
     }
 
@@ -113,11 +114,11 @@ class AccountFragment : Fragment {
 
     private fun actionViewBegin() {
         binding.progressBarAccountFragment.visibility = View.VISIBLE
-        binding.layoutAccountFragment.alpha = 0.5f
+        binding.layoutAccountFragment.visibility = View.GONE
     }
 
     private fun actionViewEnd() {
         binding.progressBarAccountFragment.visibility = View.GONE
-        binding.layoutAccountFragment.alpha = 1f
+        binding.layoutAccountFragment.visibility = View.VISIBLE
     }
 }
