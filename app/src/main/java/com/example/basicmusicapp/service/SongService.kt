@@ -19,12 +19,10 @@ import com.example.basicmusicapp.Constants
 import com.example.basicmusicapp.PlayingSongActivity
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.broadcastreceiver.MyReceiver
-import com.example.basicmusicapp.models.Song
 import com.example.basicmusicapp.models.SongMusic
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlin.math.min
 
 class SongService : Service() {
     private val binder = MySongBinder()

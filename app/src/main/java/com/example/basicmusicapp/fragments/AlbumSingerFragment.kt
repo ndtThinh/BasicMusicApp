@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
@@ -14,7 +13,6 @@ import com.example.basicmusicapp.R
 import com.example.basicmusicapp.adapters.SingerAdapter
 import com.example.basicmusicapp.databinding.FragmentAlbumSingerBinding
 import com.example.basicmusicapp.models.User
-import com.example.basicmusicapp.repository.DataSongs
 import com.example.basicmusicapp.viewmodels.ViewModelAlbumSongSingerFragment
 import java.text.Normalizer
 import java.util.*

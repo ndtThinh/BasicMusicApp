@@ -1,10 +1,7 @@
 package com.example.basicmusicapp.broadcastreceiver
 
 import android.content.*
-import android.os.IBinder
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.basicmusicapp.service.MusicService
-import com.example.basicmusicapp.service.MyService
 import com.example.basicmusicapp.service.SongService
 
 open class MyReceiver : BroadcastReceiver() {

@@ -5,9 +5,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.basicmusicapp.R
 import com.example.basicmusicapp.databinding.ItemSingerBinding
-import com.example.basicmusicapp.databinding.LayoutItemSongBinding
-import com.example.basicmusicapp.models.Song
-import com.example.basicmusicapp.models.SongMusic
 import com.example.basicmusicapp.models.User
 import com.squareup.picasso.Picasso
 

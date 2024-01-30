@@ -35,7 +35,6 @@ class MainActivity : AppCompatActivity(), LoginFragment.OnChangScreen {
         binding.bottomNavigation.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.homeNav -> changeFragment(HomeFragment())
-                R.id.songsNav -> changeFragment(ListSongFragment())
                 R.id.accountNav -> changeFragment(AccountFragment(userId!!))
                 R.id.albumNav -> changeFragment(AlbumSingerFragment())
             }

@@ -5,10 +5,6 @@
         android:icon="@drawable/note_music_icon"
         android:title="Khám phá" />
     <item
-        android:id="@+id/songsNav"
-        android:icon="@drawable/music_song_icon"
-        android:title="Bài hát" />
-    <item
         android:id="@+id/albumNav"
         android:icon="@drawable/album_icon"
         android:title="Album" />

@@ -31,8 +31,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/nameFragment"
-            android:background="#D7D6D7"
             android:layout_margin="10dp"
+            android:background="#D7D6D7"
             android:orientation="horizontal">
 
             <com.google.android.material.imageview.ShapeableImageView
@@ -199,6 +199,7 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnMySongs"
                 android:layout_width="match_parent"

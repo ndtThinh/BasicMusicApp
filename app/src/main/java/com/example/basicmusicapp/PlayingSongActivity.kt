@@ -145,7 +145,7 @@ class PlayingSongActivity : AppCompatActivity(), ServiceConnection {
     @SuppressLint("SetTextI18n")
     private fun getDataFromActivity() {
         currentSong = intent.getSerializableExtra("song") as SongMusic
-        listSong = intent.getStringArrayListExtra("listSong") as ArrayList<SongMusic>
+        listSong = intent.getSerializableExtra("listSong") as ArrayList<SongMusic>
         val style = intent.getIntExtra("style", 0)
         index = intent.getIntExtra("index", 0)
         kind = intent.getStringExtra("kind").toString()

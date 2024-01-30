@@ -43,9 +43,6 @@ class AccountFragment : Fragment {
         actionViewBegin()
         userIdCurrent?.let { setInfoUser(it) }
         binding.apply {
-            downloadSongsBtn.setOnClickListener {
-                changeFragment(ListSongFragment())
-            }
             btnLogOut.setOnClickListener {
                 context?.let { it1 -> RepositoryUser().logOutUser(it1) }
                 Toast.makeText(context, "Logout user ", Toast.LENGTH_SHORT).show()
